@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+import { useEffect } from "react";
 
 export default function CS2MapSelector() {
   const [team1, setTeam1] = useState("Time 1");
@@ -61,18 +62,74 @@ export default function CS2MapSelector() {
     return `/assets/maps/${mapName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
   };
 
+  useEffect(() => {
+    if (availableMaps.length === 2) {
+      const shuffled = [...availableMaps].sort(() => Math.random() - 0.5);
+
+      const mapToBan = shuffled[0];
+      const mapToSelect = shuffled[1];
+
+      // Marca como banido
+      setMaps(prev =>
+        prev.map(m =>
+          m.name === mapToBan.name ? { ...m, isBanned: true, isSelected: false } : m
+        )
+      );
+      setActionHistory(prev => [
+        ...prev,
+        { team: 3, action: "vetou", map: mapToBan.name }
+      ]);
+
+      // Marca como selecionado
+      setMaps(prev =>
+        prev.map(m =>
+          m.name === mapToSelect.name ? { ...m, isSelected: true, isBanned: false } : m
+        )
+      );
+      setActionHistory(prev => [
+        ...prev,
+        { team: 3, action: "escolheu", map: mapToSelect.name }
+      ]);
+    }
+  }, [availableMaps]);
+
+  const getNextAction = () => {
+    const totalBans = actionHistory.filter(a => a.action === "vetou").length;
+    const totalSelects = actionHistory.filter(a => a.action === "escolheu").length;
+
+    if (totalBans < 4) return "ban";
+    if (totalSelects < 2) return "select";
+    return "ban";
+  };
+
+  const handleAction = (mapName: string) => {
+    const nextAction = getNextAction();
+
+    if (nextAction === "ban") {
+      setMaps(maps.map(map => 
+        map.name === mapName ? { ...map, isBanned: true, isSelected: false } : map
+      ));
+      setActionHistory([...actionHistory, {team: currentTeam, action: "vetou", map: mapName}]);
+    } else if (nextAction === "select") {
+      setMaps(maps.map(map => 
+        map.name === mapName ? { ...map, isSelected: true, isBanned: false } : map
+      ));
+      setActionHistory([...actionHistory, {team: currentTeam, action: "escolheu", map: mapName}]);
+    }
+
+    setCurrentTeam(currentTeam === 1 ? 2 : 1);
+  };
+
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">
+    <div className="min-h-screen bg-background p-4 md:p-2">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-8 mt-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-primary mb-8">
             SispBalas - Vetador
           </h1>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <Card className="bg-muted/50">
             <CardContent className="p-4 text-center">
               <h3 className="text-lg font-semibold text-foreground">Total</h3>
@@ -96,8 +153,7 @@ export default function CS2MapSelector() {
           </Card>
         </div>
 
-        {/* Team Inputs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Time 1</label>
             <input
@@ -120,15 +176,13 @@ export default function CS2MapSelector() {
           </div>
         </div>
 
-        {/* Current Team Indicator */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-2">
           <Badge className="px-4 py-2 text-lg">
             Vez do: {currentTeam === 1 ? team1 : team2}
           </Badge>
         </div>
 
-        {/* Reset Button */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-2">
           <Button 
             onClick={resetAll}
             variant="outline"
@@ -139,7 +193,7 @@ export default function CS2MapSelector() {
         </div>
 
         {/* Map Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
           {maps.map((map) => (
             <Card 
               key={map.name}
@@ -153,11 +207,7 @@ export default function CS2MapSelector() {
             >
               <CardContent className="p-4">
               <div className="h-32 mb-3 bg-muted rounded-lg overflow-hidden">
-                <img 
-                  src={getImagePath(map.name)}
-                  alt={`Counter-Strike 2 ${map.name} map`}
-                  className="w-full h-full object-cover"
-                />
+                <img src={getImagePath(map.name)} alt={`Counter-Strike 2 ${map.name} map`} className="w-full h-full object-cover"/>
               </div>
                 
                 <h3 className="font-semibold text-lg mb-3 text-foreground">
@@ -166,25 +216,12 @@ export default function CS2MapSelector() {
 
                 <div className="flex flex-col space-y-2">
                   <Button
-                    onClick={() => handleBanMap(map.name)}
-                    variant={map.isBanned ? "destructive" : "outline"}
+                    onClick={() => handleAction(map.name)}
                     size="sm"
                     className="w-full"
-                    disabled={map.isSelected}
+                    disabled={map.isBanned || map.isSelected}
                   >
-                    {map.isBanned ? "Desfazer Ban" : "Vetar Mapa"}
-                  </Button>
-                  
-                  <Button
-                    onClick={() => handleSelectMap(map.name)}
-                    variant={map.isSelected ? "default" : "outline"}
-                    size="sm"
-                    className={`w-full ${
-                      map.isSelected ? 'bg-green-600 hover:bg-green-700' : ''
-                    }`}
-                    disabled={map.isBanned}
-                  >
-                    {map.isSelected ? "Desselecionar" : "Selecionar Mapa"}
+                    {getNextAction() === "ban" ? "Vetar Mapa" : "Selecionar Mapa"}
                   </Button>
                 </div>
 
@@ -206,18 +243,58 @@ export default function CS2MapSelector() {
 
         {/* Action History */}
         {actionHistory.length > 0 && (
-          <div className="mt-8 p-6 bg-muted/30 rounded-lg">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Histórico de Ações</h2>
-            <div className="space-y-2">
-              {actionHistory.map((action, index) => (
-                <div key={index} className="flex items-center space-x-2 p-3 bg-background rounded-md">
-                  <Badge variant={action.team === 1 ? "default" : "secondary"}>
-                    {action.team === 1 ? team1 : team2}
-                  </Badge>
-                  <span className="text-foreground">{action.action}</span>
-                  <Badge variant="outline">{action.map}</Badge>
-                </div>
-              ))}
+          <div className="mt-6 p-6 bg-muted/30 rounded-xl shadow-sm">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+              📜 Histórico de Ações
+            </h2>
+
+            <div className="space-y-3">
+              {actionHistory.map((action, index) => {
+                const isBan = action.action.includes("vetou");
+                const isSelect = action.action.includes("escolheu");
+
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-center justify-between p-4 rounded-lg shadow-sm border transition-all
+                      ${isBan ? "border-destructive/50 bg-destructive/10" : ""}
+                      ${isSelect ? "border-green-600/50 bg-green-600/10" : ""}
+                      ${!isBan && !isSelect ? "border-border bg-background" : ""}
+                    `}
+                  >
+                    {/* Time */}
+                    <Badge
+                      variant={
+                        action.team === 1 ? "default" : action.team === 2 ? "secondary" : "outline"
+                      }
+                      className="px-3 py-1 text-sm"
+                    >
+                      {action.team === 1 ? team1 : action.team === 2 ? team2 : "Sistema"}
+                    </Badge>
+
+                    {/* Ação */}
+                    <div className="flex-1 text-center">
+                      <span
+                        className={`font-medium ${
+                          isBan ? "text-destructive" : isSelect ? "text-green-600" : "text-foreground"
+                        }`}
+                      >
+                        {action.action}
+                      </span>
+                    </div>
+
+                    {/* Mapa */}
+                    <Badge
+                      variant="outline"
+                      className={`px-3 py-1 font-semibold ${
+                        isBan ? "border-destructive text-destructive" : ""
+                      } ${isSelect ? "border-green-600 text-green-600" : ""}`}
+                    >
+                      {action.map}
+                    </Badge>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
