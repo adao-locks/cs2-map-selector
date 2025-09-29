@@ -11,13 +11,16 @@ import Link from "next/link"
 export default function CS2MapSelector() {
   const [team1, setTeam1] = useState("Time 1")
   const [team2, setTeam2] = useState("Time 2")
+  const [team3, setBanco] = useState("Banco")
   const [currentTeam, setCurrentTeam] = useState(1)
   const [actionHistory, setActionHistory] = useState<Array<{ team: number; action: string; map: string }>>([])
 
   const [team1Players, setTeam1Players] = useState<string[]>([])
   const [team2Players, setTeam2Players] = useState<string[]>([])
+  const [team3Players, setTeam3Players] = useState<string[]>([])
   const [newPlayerTeam1, setNewPlayerTeam1] = useState("")
   const [newPlayerTeam2, setNewPlayerTeam2] = useState("")
+  const [newPlayerTeam3, setNewPlayerTeam3] = useState("")
   const [copySuccess, setCopySuccess] = useState(false)
 
   const [maps, setMaps] = useState([
@@ -55,10 +58,13 @@ export default function CS2MapSelector() {
     setCurrentTeam(1)
     setTeam1("Time 1")
     setTeam2("Time 2")
+    setBanco("Banco")
     setTeam1Players([])
     setTeam2Players([])
+    setTeam3Players([])
     setNewPlayerTeam1("")
     setNewPlayerTeam2("")
+    setNewPlayerTeam3("")
   }
 
   const bannedMaps = maps.filter((map) => map.isBanned)
@@ -123,12 +129,23 @@ export default function CS2MapSelector() {
     }
   }
 
+  const addPlayerTeam3 = () => {
+    if (newPlayerTeam3.trim() && team3Players.length < 5) {
+      setTeam3Players([...team3Players, newPlayerTeam3.trim()])
+      setNewPlayerTeam2("")
+    }
+  }
+
   const removePlayerTeam1 = (index: number) => {
     setTeam1Players(team1Players.filter((_, i) => i !== index))
   }
 
   const removePlayerTeam2 = (index: number) => {
     setTeam2Players(team2Players.filter((_, i) => i !== index))
+  }
+
+  const removePlayerTeam3 = (index: number) => {
+    setTeam3Players(team3Players.filter((_, i) => i !== index))
   }
 
   const copyTeamsFormatted = async () => {
@@ -157,49 +174,7 @@ export default function CS2MapSelector() {
               SispBalas
             </h1>
             <p className="text-xl md:text-2xl font-semibold text-cyan-400 tracking-wider">VETADOR DE MAPAS</p>
-            <div className="absolute -inset-1 bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 rounded-lg blur opacity-20"></div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl hover:shadow-orange-500/20 transition-all duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">📊</span>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Total</h3>
-              <p className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                {maps.length}
-              </p>
-              <p className="text-sm text-gray-300">Mapas</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl hover:shadow-red-500/20 transition-all duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">🚫</span>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Banidos</h3>
-              <p className="text-3xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
-                {bannedMaps.length}
-              </p>
-              <p className="text-sm text-gray-300">Vetados</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl hover:shadow-green-500/20 transition-all duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-green-500 to-green-700 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xl">✅</span>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Selecionados</h3>
-              <p className="text-3xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
-                {selectedMaps.length}
-              </p>
-              <p className="text-sm text-gray-300">Escolhidos</p>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -233,7 +208,7 @@ export default function CS2MapSelector() {
             </span>
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Team 1 Players */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
@@ -347,10 +322,66 @@ export default function CS2MapSelector() {
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Copy Button */}
-          {(team1Players.length > 0 || team2Players.length > 0) && (
+            {/* Banco Players */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
+                <h3 className="text-xl font-bold text-orange-400">{team3}</h3>
+                <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/50">
+                  {team3Players.length}
+                </Badge>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newPlayerTeam3}
+                  onChange={(e) => setNewPlayerTeam3(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && addPlayerTeam3()}
+                  className="flex-1 p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition-all"
+                  placeholder="Nome do jogador"
+                  maxLength={20}
+                  disabled={team3Players.length >= 50}
+                />
+                <Button
+                  onClick={addPlayerTeam3}
+                  disabled={!newPlayerTeam3.trim() || team3Players.length >= 50}
+                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 px-6 font-semibold shadow-lg hover:shadow-orange-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ➕
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {team3Players.map((player, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-orange-500/10 backdrop-blur-md border border-orange-500/30 rounded-lg group hover:bg-orange-500/20 transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-gradient-to-r from-orange-500 to-red-600 text-white border-0 w-8 h-8 flex items-center justify-center">
+                        {index + 1}
+                      </Badge>
+                      <span className="text-white font-medium">{player}</span>
+                    </div>
+                    <Button
+                      onClick={() => removePlayerTeam3(index)}
+                      size="sm"
+                      className="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                ))}
+                {team3Players.length === 0 && (
+                  <div className="text-center py-8 text-gray-400 italic">Nenhum jogador adicionado</div>
+                )}
+              </div>
+            </div>
+          </div>
+            {/* Copy Button */}
+            {(team1Players.length > 0 || team2Players.length > 0 || team3Players.length > 0) && (
             <div className="mt-8 flex justify-center">
               <Button
                 onClick={copyTeamsFormatted}
@@ -358,8 +389,7 @@ export default function CS2MapSelector() {
               >
                 {copySuccess ? "✅ Copiado!" : "📋 Copiar Times Formatados"}
               </Button>
-            </div>
-          )}
+            </div>)}
         </div>
 
         <div className="text-center mb-6">
@@ -446,7 +476,7 @@ export default function CS2MapSelector() {
             <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
               <span className="text-2xl">📜</span>
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                Histórico de Ações
+                Histórico de Vetos
               </span>
             </h2>
 
