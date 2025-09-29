@@ -7,89 +7,104 @@ export default function CS2PlayerAwards() {
   const players = [
     {
       id: 1,
-      name: "PlayerX",
+      name: "Davizera",
       award: "MVP",
       icon: "👑",
       color: "yellow",
-      stats: { adr: 92.5, kast: 74, rating: 1.25, damage: 1842 },
-      kda: { kills: 24, deaths: 15, assists: 5 },
+      stats: { adr: ((140+135)/2), kast: 71, rating: ((1.68+1.59)/2), damage: (2243+3928) },
+      kda: { kills: (17+33), deaths: (14+23), assists: (10+7) },
       badge: "1",
       glowClass: "mvp-glow",
       gradientClass: "from-yellow-500/20 to-orange-500/20",
       borderClass: "border-yellow-400",
       textClass: "text-yellow-400",
+      image: "/players/davi.png",
     },
     {
       id: 2,
-      name: "PlayerY",
+      name: "gHs",
       award: "Mais Útil",
       icon: "🛡️",
       color: "green",
-      stats: { adr: 80.3, kast: 79, rating: 1.12, damage: 1520 },
-      kda: { kills: 18, deaths: 12, assists: 6 },
+      stats: { adr: 104, kast: 84, rating: 2.95, damage: 4643 },
+      kda: { kills: (16+24), deaths: (9+18), assists: (7+10) },
       badge: "⭐",
       glowClass: "useful-glow",
       gradientClass: "from-green-500/20 to-emerald-500/20",
       borderClass: "border-green-400",
       textClass: "text-green-400",
+      image: "/players/ghs.png",
     },
     {
       id: 3,
-      name: "PlayerZ",
+      name: "CavaFalta",
       award: "Trade Killer",
       icon: "⚡",
       color: "blue",
-      stats: { adr: 77.1, kast: 70, rating: 1.05, trades: 10 },
-      kda: { kills: 16, deaths: 14, assists: 4 },
-      badge: "10",
+      stats: { adr: ((69+67)/2), kast: ((56+67)/2), rating: ((0.76+1)/2), damage: (1111+1950) },
+      kda: { kills: (11+22), deaths: (15+20), assists: (2+4) },
+      badge: "9",
       glowClass: "trade-glow",
       gradientClass: "from-blue-500/20 to-cyan-500/20",
       borderClass: "border-blue-400",
       textClass: "text-blue-400",
+      image: "/players/silva.png",
     },
     {
       id: 4,
-      name: "PlayerA",
+      name: "Davizera",
       award: "Mais Dano",
       icon: "💥",
       color: "red",
-      stats: { adr: 95.6, kast: 68, rating: 1.18, damage: 2050 },
-      kda: { kills: 28, deaths: 20, assists: 3 },
+      stats: { adr: ((140+135)/2), kast: 71, rating: ((1.68+1.59)/2), damage: (2243+3928) },
+      kda: { kills: (17+33), deaths: (14+23), assists: (10+7) },
       badge: "🔥",
       glowClass: "damage-glow",
       gradientClass: "from-red-500/20 to-pink-500/20",
       borderClass: "border-red-400",
       textClass: "text-red-400",
+      image: "/players/davi.png",
     },
     {
       id: 5,
-      name: "PlayerB",
+      name: "Davizera",
       award: "Mais Morreu",
       icon: "💀",
       color: "purple",
-      stats: { adr: 60.4, kast: 62, rating: 0.85, deaths: 25 },
-      kda: { kills: 12, deaths: 25, assists: 3 },
-      badge: "25",
+      stats: { adr: ((140+135)/2), kast: 71, rating: ((1.68+1.59)/2), damage: (2243+3928) },
+      kda: { kills: (17+33), deaths: (14+23), assists: (10+7) },
+      badge: "37",
       glowClass: "death-glow",
       gradientClass: "from-purple-500/20 to-indigo-500/20",
       borderClass: "border-purple-400",
       textClass: "text-purple-400",
+      image: "/players/davi.png",
     },
     {
       id: 6,
-      name: "PlayerC",
+      name: "Kad",
       award: "6º Player",
       icon: "🎯",
       color: "gray",
-      stats: { adr: 55.0, kast: 58, rating: 0.76, damage: 980 },
-      kda: { kills: 9, deaths: 20, assists: 2 },
-      badge: "6",
+      stats: { adr: ((27+45)/2), kast: ((18+58)/2), rating: ((0.01+0.6)/2), damage: (432+1316) },
+      kda: { kills: (1+9), deaths: (15+20), assists: (2+3) },
+      badge: "🎯",
       glowClass: "sixth-glow",
       gradientClass: "from-gray-500/20 to-slate-500/20",
       borderClass: "border-gray-400",
       textClass: "text-gray-400",
+      image: "/players/kad.png",
     },
   ]
+
+  const colorMap = {
+    yellow: "bg-yellow-400",
+    green: "bg-green-400",
+    blue: "bg-blue-400",
+    red: "bg-red-400",
+    purple: "bg-purple-400",
+    gray: "bg-gray-400",
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
@@ -112,7 +127,7 @@ export default function CS2PlayerAwards() {
         <h1 className="text-5xl font-bold text-white mb-4 bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
           🏆 CS2 Player Awards
         </h1>
-        <p className="text-xl text-gray-300">Estatísticas e Conquistas da Partida</p>
+        <p className="text-xl text-gray-300">Estatísticas de 26/09/2025</p>
       </div>
 
       {/* Navigation */}
@@ -130,16 +145,16 @@ export default function CS2PlayerAwards() {
             key={player.id}
             className={`award-card ${player.glowClass} rounded-2xl p-8 flex flex-col items-center transform hover:scale-105 transition-all duration-300 bg-gradient-to-br ${player.gradientClass}`}
           >
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-2">
               <span className="text-3xl mr-2">{player.icon}</span>
               <h3 className={`text-2xl font-bold ${player.textClass}`}>{player.award}</h3>
             </div>
 
-            <div className="relative mb-6">
+            <div className="relative mb-2">
               <img
-                src="/cs2-player-avatar.jpg"
-                alt="Player"
-                className={`w-24 h-24 rounded-full border-4 ${player.borderClass} shadow-lg`}
+                src={player.image}
+                alt={player.name}
+                className={`w-24 h-24 rounded-full border-4 ${player.borderClass} shadow-lg object-cover`}
               />
               <div
                 className={`absolute -top-2 -right-2 bg-${player.color}-400 ${player.color === "yellow" ? "text-black" : "text-white"} rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm`}
@@ -148,7 +163,7 @@ export default function CS2PlayerAwards() {
               </div>
             </div>
 
-            <p className="text-xl font-bold text-white mb-6">{player.name}</p>
+            <p className="text-xl font-bold text-white mb-4">{player.name}</p>
 
             <div className="grid grid-cols-2 gap-4 w-full text-sm">
               <div className="bg-black/30 rounded-lg p-3 text-center">
@@ -165,16 +180,10 @@ export default function CS2PlayerAwards() {
               </div>
               <div className="bg-black/30 rounded-lg p-3 text-center">
                 <p className="text-gray-300">
-                  {player.stats.damage
-                    ? "Dano"
-                    : player.stats.trades
-                      ? "Trades"
-                      : player.stats.deaths
-                        ? "Mortes"
-                        : "Dano"}
+                  {"Dano"}
                 </p>
                 <p className={`text-xl font-bold ${player.textClass}`}>
-                  {player.stats.damage || player.stats.trades || player.stats.deaths}
+                  {player.stats.damage}
                 </p>
               </div>
             </div>
