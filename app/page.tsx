@@ -132,7 +132,7 @@ export default function CS2MapSelector() {
   const addPlayerTeam3 = () => {
     if (newPlayerTeam3.trim() && team3Players.length < 5) {
       setTeam3Players([...team3Players, newPlayerTeam3.trim()])
-      setNewPlayerTeam2("")
+      setNewPlayerTeam3("")
     }
   }
 
@@ -151,6 +151,18 @@ export default function CS2MapSelector() {
   const copyTeamsFormatted = async () => {
     const formatted = `Times escolhidos\n🎮 ${team1}\n${team1Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n🎮 ${team2}\n${team2Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}`
 
+    try {
+      await navigator.clipboard.writeText(formatted)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy:", err)
+    }
+  }
+
+  const copyGamesFormatted = async () => {
+    const formatted = `Mapas:\n${selectedMaps.map((m) => `✅ ${m.name}`).join("\n")}` + 
+                      `\n\nTimes escolhidos\n🎮 ${team1}\n${team1Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n🎮 ${team2}\n${team2Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n🎮 ${team3}\n${team3Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}`
     try {
       await navigator.clipboard.writeText(formatted)
       setCopySuccess(true)
@@ -326,9 +338,9 @@ export default function CS2MapSelector() {
             {/* Banco Players */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-orange-400 to-red-500"></div>
-                <h3 className="text-xl font-bold text-orange-400">{team3}</h3>
-                <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/50">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-green-500"></div>
+                <h3 className="text-xl font-bold text-green-400">{team3}</h3>
+                <Badge className="bg-green-500/20 text-green-400 border border-green-500/50">
                   {team3Players.length}
                 </Badge>
               </div>
@@ -339,7 +351,7 @@ export default function CS2MapSelector() {
                   value={newPlayerTeam3}
                   onChange={(e) => setNewPlayerTeam3(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addPlayerTeam3()}
-                  className="flex-1 p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition-all"
+                  className="flex-1 p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all"
                   placeholder="Nome do jogador"
                   maxLength={20}
                   disabled={team3Players.length >= 50}
@@ -347,7 +359,7 @@ export default function CS2MapSelector() {
                 <Button
                   onClick={addPlayerTeam3}
                   disabled={!newPlayerTeam3.trim() || team3Players.length >= 50}
-                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 px-6 font-semibold shadow-lg hover:shadow-orange-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 px-6 font-semibold shadow-lg hover:shadow-green-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ➕
                 </Button>
@@ -357,10 +369,10 @@ export default function CS2MapSelector() {
                 {team3Players.map((player, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-orange-500/10 backdrop-blur-md border border-orange-500/30 rounded-lg group hover:bg-orange-500/20 transition-all duration-300"
+                    className="flex items-center justify-between p-3 bg-green-500/10 backdrop-blur-md border border-green-500/30 rounded-lg group hover:bg-green-500/20 transition-all duration-300"
                   >
                     <div className="flex items-center gap-3">
-                      <Badge className="bg-gradient-to-r from-orange-500 to-red-600 text-white border-0 w-8 h-8 flex items-center justify-center">
+                      <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 w-8 h-8 flex items-center justify-center">
                         {index + 1}
                       </Badge>
                       <span className="text-white font-medium">{player}</span>
@@ -368,7 +380,7 @@ export default function CS2MapSelector() {
                     <Button
                       onClick={() => removePlayerTeam3(index)}
                       size="sm"
-                      className="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                      className="bg-green-500/20 hover:bg-green-500/40 text-green-400 border border-green-500/50 opacity-0 group-hover:opacity-100 transition-all duration-300"
                     >
                       ✕
                     </Button>
@@ -469,6 +481,15 @@ export default function CS2MapSelector() {
               🏆 Ranking da semana
             </Button>
           </Link>
+        </div>
+
+        <div className="mt-8 flex justify-center">
+          <Button
+            onClick={copyGamesFormatted}
+            className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+          >
+            {copySuccess ? "✅ Copiado!" : "📋 Copiar Game Formatado"}
+          </Button>
         </div>
 
         {actionHistory.length > 0 && (
