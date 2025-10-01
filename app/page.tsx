@@ -23,19 +23,27 @@ export default function CS2MapSelector() {
   const [newPlayerTeam3, setNewPlayerTeam3] = useState("")
   const [copySuccess, setCopySuccess] = useState(false)
 
-  const [maps, setMaps] = useState([
-    { name: "Ancient", isBanned: false, isSelected: false },
-    { name: "Ancient Night", isBanned: false, isSelected: false },
-    { name: "Dust II", isBanned: false, isSelected: false },
-    { name: "Inferno", isBanned: false, isSelected: false },
-    { name: "Mirage", isBanned: false, isSelected: false },
-    { name: "Nuke", isBanned: false, isSelected: false },
-    { name: "Overpass", isBanned: false, isSelected: false },
-    { name: "Train", isBanned: false, isSelected: false },
-    { name: "Anubis", isBanned: false, isSelected: false },
-    { name: "Italy", isBanned: false, isSelected: false },
-    { name: "Office", isBanned: false, isSelected: false },
-    { name: "Vertigo", isBanned: false, isSelected: false },
+  type MapType = {
+    name: string
+    isBanned: boolean
+    isSelected: boolean
+    isSideChosen: boolean
+    side: string
+  }
+
+  const [maps, setMaps] = useState<MapType[]>([
+    { name: "Ancient",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Ancient Night",  isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Dust II",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Inferno",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Mirage",         isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Nuke",           isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Overpass",       isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Train",          isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Anubis",         isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Italy",          isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Office",         isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Vertigo",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
   ])
 
   const handleBanMap = (mapName: string) => {
@@ -101,6 +109,22 @@ export default function CS2MapSelector() {
     return "ban"
   }
 
+  const sideCT = (mapName: string) => {
+    if (maps.find((map) => map.name === mapName)?.isSideChosen !== true) {
+      setMaps(maps.map((map) => (map.name === mapName ? { ...map, side: "CT" } : map)))
+      setActionHistory([...actionHistory, { team: currentTeam, action: "escolheu lado CT", map: mapName }])
+      setMaps(maps.map((map) => (map.name === mapName ? { ...map, isSideChosen: true } : map)))
+    }
+  }
+
+  const sideTR = (mapName: string) => {
+    if (maps.find((map) => map.name === mapName)?.isSideChosen !== true) {
+      setMaps(maps.map((map) => (map.name === mapName ? { ...map, side: "TR" } : map)))
+      setActionHistory([...actionHistory, { team: currentTeam, action: "escolheu lado TR", map: mapName }])
+      setMaps(maps.map((map) => (map.name === mapName ? { ...map, isSideChosen: true } : map)))
+    }
+  }
+
   const handleAction = (mapName: string) => {
     const nextAction = getNextAction()
 
@@ -150,6 +174,23 @@ export default function CS2MapSelector() {
 
   const copyTeamsFormatted = async () => {
     const formatted = `Times escolhidos\n🎮 ${team1}\n${team1Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n🎮 ${team2}\n${team2Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}`
+
+    try {
+      await navigator.clipboard.writeText(formatted)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy:", err)
+    }
+  }
+
+  const copyHist = async () => {
+    const formatted = `Histórico de Vetos:\n${actionHistory
+      .map((action, index) => {
+        const teamName = action.team === 1 ? team1 : action.team === 2 ? team2 : "Sistema"
+        return `${index + 1}. ${teamName} ${action.action} ${action.map}`
+      })
+      .join("\n")}`
 
     try {
       await navigator.clipboard.writeText(formatted)
@@ -468,6 +509,30 @@ export default function CS2MapSelector() {
                     ✅ SELECIONADO
                   </Badge>
                 )}
+
+                {map.isSelected && selectedMaps.length <= 2 && (
+                <><div className="grid grid-cols-1 md:grid-cols-2 gap-1 mt-2">
+                    <Button
+                      onClick={() => sideCT(map.name)}
+                      size="sm"
+                      className={`w-full font-semibold transition-all duration-300 ${getNextAction() === "ban"
+                          ? "bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-lg hover:shadow-blue-500/25"
+                          : "bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-lg hover:shadow-blue-500/25"}`}
+                      disabled={map.isBanned || map.isSideChosen}
+                    >
+                      {"🛡️ CT"}
+                    </Button>
+                    <Button
+                      onClick={() => sideTR(map.name)}
+                      size="sm"
+                      className={`w-full font-semibold transition-all duration-300 ${getNextAction() === "ban"
+                          ? "bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white shadow-lg hover:shadow-orange-500/25"
+                          : "bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white shadow-lg hover:shadow-orange-500/25"}`}
+                      disabled={map.isBanned || map.isSideChosen}
+                    >
+                      {"🎯 TR"}
+                    </Button>
+                  </div></>)}
               </CardContent>
             </Card>
           ))}
@@ -493,7 +558,7 @@ export default function CS2MapSelector() {
         </div>
 
         {actionHistory.length > 0 && (
-          <div className="mt-12 p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl">
+          <><div className="mt-12 p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl">
             <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
               <span className="text-2xl">📜</span>
               <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
@@ -516,33 +581,25 @@ export default function CS2MapSelector() {
                     `}
                   >
                     <Badge
-                      className={`px-4 py-2 text-sm font-semibold border-0 shadow-lg ${
-                        action.team === 1
+                      className={`px-4 py-2 text-sm font-semibold border-0 shadow-lg ${action.team === 1
                           ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
                           : action.team === 2
                             ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
-                            : "bg-gradient-to-r from-purple-500 to-pink-600 text-white"
-                      }`}
+                            : "bg-gradient-to-r from-purple-500 to-pink-600 text-white"}`}
                     >
                       {action.team === 1 ? team1 : action.team === 2 ? team2 : "Sistema"}
                     </Badge>
 
                     <div className="flex-1 text-center">
                       <span
-                        className={`font-bold text-lg ${
-                          isBan ? "text-red-400" : isSelect ? "text-green-400" : "text-white"
-                        }`}
+                        className={`font-bold text-lg ${isBan ? "text-red-400" : isSelect ? "text-green-400" : "text-white"}`}
                       >
                         {action.action}
                       </span>
                     </div>
 
                     <Badge
-                      className={`px-4 py-2 font-bold border-0 shadow-lg ${
-                        isBan ? "bg-gradient-to-r from-red-500 to-red-700 text-white" : ""
-                      } ${isSelect ? "bg-gradient-to-r from-green-500 to-green-700 text-white" : ""} ${
-                        !isBan && !isSelect ? "bg-white/20 text-white" : ""
-                      }`}
+                      className={`px-4 py-2 font-bold border-0 shadow-lg ${isBan ? "bg-gradient-to-r from-red-500 to-red-700 text-white" : ""} ${isSelect ? "bg-gradient-to-r from-green-500 to-green-700 text-white" : ""} ${!isBan && !isSelect ? "bg-white/20 text-white" : ""}`}
                     >
                       {action.map}
                     </Badge>
@@ -551,72 +608,15 @@ export default function CS2MapSelector() {
               })}
             </div>
           </div>
+            <div className="mt-8 flex justify-center">
+              <Button
+                onClick={copyHist}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+              >
+                {copySuccess ? "✅ Copiado!" : "📋 Copiar Histórico"}
+              </Button>
+            </div></>
         )}
-
-        {(bannedMaps.length > 0 || selectedMaps.length > 0) && (
-          <div className="mt-12 p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl">
-            <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-              <span className="text-2xl">🏆</span>
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-                Resultado da Simulação
-              </span>
-            </h2>
-
-            {bannedMaps.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-red-400 mb-4 flex items-center gap-2">
-                  <span>🚫</span> Mapas Vetados:
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {bannedMaps.map((map) => (
-                    <Badge
-                      key={map.name}
-                      className="bg-gradient-to-r from-red-500 to-red-700 text-white border-0 px-4 py-2 text-sm font-semibold shadow-lg"
-                    >
-                      {map.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedMaps.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
-                  <span>✅</span> Mapas Selecionados:
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {selectedMaps.map((map) => (
-                    <Badge
-                      key={map.name}
-                      className="bg-gradient-to-r from-green-500 to-green-700 text-white border-0 px-4 py-2 text-sm font-semibold shadow-lg"
-                    >
-                      {map.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {availableMaps.length > 0 && (
-              <div>
-                <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-                  <span>⏳</span> Mapas Disponíveis:
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {availableMaps.map((map) => (
-                    <Badge
-                      key={map.name}
-                      className="bg-white/20 text-white border border-white/30 px-4 py-2 text-sm font-semibold shadow-lg"
-                    >
-                      {map.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          )}
       </div>
     </div>
   )
