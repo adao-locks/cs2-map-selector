@@ -28,22 +28,23 @@ export default function CS2MapSelector() {
     isBanned: boolean
     isSelected: boolean
     isSideChosen: boolean
+    teamSide: string
     side: string
   }
 
   const [maps, setMaps] = useState<MapType[]>([
-    { name: "Ancient",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Ancient Night",  isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Dust II",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Inferno",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Mirage",         isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Nuke",           isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Overpass",       isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Train",          isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Anubis",         isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Italy",          isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Office",         isBanned: false, isSelected: false, isSideChosen: false, side: "" },
-    { name: "Vertigo",        isBanned: false, isSelected: false, isSideChosen: false, side: "" },
+    { name: "Ancient",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Ancient Night",  isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Dust II",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Inferno",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Mirage",         isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Nuke",           isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Overpass",       isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Train",          isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Anubis",         isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Italy",          isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Office",         isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Vertigo",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
   ])
 
   const handleBanMap = (mapName: string) => {
@@ -112,6 +113,7 @@ export default function CS2MapSelector() {
   const sideCT = (mapName: string) => {
     if (maps.find((map) => map.name === mapName)?.isSideChosen !== true) {
       setMaps(maps.map((map) => (map.name === mapName ? { ...map, side: "CT" } : map)))
+      setMaps(maps.map((map) => (map.name === mapName ? { ...map, teamSide: currentTeam.toString() } : map)))
       setActionHistory([...actionHistory, { team: currentTeam, action: "escolheu lado CT", map: mapName }])
       setMaps(maps.map((map) => (map.name === mapName ? { ...map, isSideChosen: true } : map)))
     }
@@ -120,6 +122,7 @@ export default function CS2MapSelector() {
   const sideTR = (mapName: string) => {
     if (maps.find((map) => map.name === mapName)?.isSideChosen !== true) {
       setMaps(maps.map((map) => (map.name === mapName ? { ...map, side: "TR" } : map)))
+      setMaps(maps.map((map) => (map.name === mapName ? { ...map, teamSide: currentTeam.toString() } : map)))
       setActionHistory([...actionHistory, { team: currentTeam, action: "escolheu lado TR", map: mapName }])
       setMaps(maps.map((map) => (map.name === mapName ? { ...map, isSideChosen: true } : map)))
     }
@@ -202,8 +205,10 @@ export default function CS2MapSelector() {
   }
 
   const copyGamesFormatted = async () => {
-    const formatted = `Mapas:\n${selectedMaps.map((m) => `✅ ${m.name}`).join("\n")}` + 
-                      `\n\nTimes escolhidos\n🎮 ${team1}\n${team1Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n🎮 ${team2}\n${team2Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n🎮 ${team3}\n${team3Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}`
+    const formatted = `Mapas:\n${selectedMaps.map((m) => `✅ ${m.name+" - "+m.teamSide+" - "+m.side}`).join("\n")}` + 
+                      `\n\nTimes escolhidos\n🎮 ${team1}\n${team1Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n
+                      🎮 ${team2}\n${team2Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n\n
+                      🎮 ${team3}\n${team3Players.map((p, i) => `${i + 1}. ${p}`).join("\n")}`
     try {
       await navigator.clipboard.writeText(formatted)
       setCopySuccess(true)
