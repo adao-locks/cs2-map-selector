@@ -229,6 +229,14 @@ export default function CS2MapSelector() {
             <p className="text-xl md:text-2xl font-semibold text-cyan-400 tracking-wider">VETADOR DE MAPAS</p>
           </div>
         </div>
+        
+        <div className="flex justify-center mt-12 mb-8">
+          <Link href="/awards">
+            <Button className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-red-500/25 transition-all duration-300">
+              🏆 Ranking da semana
+            </Button>
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="space-y-3">
@@ -445,19 +453,10 @@ export default function CS2MapSelector() {
             </div>)}
         </div>
 
-        <div className="text-center mb-6">
+        <div className="text-center mb-12">
           <Badge className="px-6 py-3 text-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
             🎯 Vez do: {currentTeam === 1 ? team1 : team2}
           </Badge>
-        </div>
-
-        <div className="flex justify-center mb-8">
-          <Button
-            onClick={resetAll}
-            className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-red-500/25 transition-all duration-300"
-          >
-            🔄 Reiniciar Tudo
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -538,25 +537,6 @@ export default function CS2MapSelector() {
           ))}
         </div>
 
-        
-
-        <div className="flex justify-center mt-12 mb-8">
-          <Link href="/awards">
-            <Button className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-red-500/25 transition-all duration-300">
-              🏆 Ranking da semana
-            </Button>
-          </Link>
-        </div>
-
-        <div className="mt-8 flex justify-center">
-          <Button
-            onClick={copyGamesFormatted}
-            className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
-          >
-            {copySuccess ? "✅ Copiado!" : "📋 Copiar Game Formatado"}
-          </Button>
-        </div>
-
         {actionHistory.length > 0 && (
           <><div className="mt-12 p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl">
             <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
@@ -607,7 +587,7 @@ export default function CS2MapSelector() {
                 )
               })}
             </div>
-          </div>
+        
             <div className="mt-8 flex justify-center">
               <Button
                 onClick={copyHist}
@@ -615,8 +595,18 @@ export default function CS2MapSelector() {
               >
                 {copySuccess ? "✅ Copiado!" : "📋 Copiar Histórico"}
               </Button>
-            </div></>
+            </div>
+          </div></>
         )}
+
+        <div className="mt-8 flex justify-center">
+          <Button
+            onClick={copyGamesFormatted}
+            className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+          >
+            {copySuccess ? "✅ Copiado!" : "📋 Copiar Game Formatado"}
+          </Button>
+        </div>
       </div>
     </div>
   )
