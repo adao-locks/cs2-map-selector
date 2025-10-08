@@ -134,7 +134,7 @@ export default function CS2PlayerAwards() {
       <div className="text-center mb-8">
         <Link href="/">
           <button className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all duration-300">
-            ← Voltar para Seletor de Mapas
+            ← Voltar para Menu
           </button>
         </Link>
       </div>
