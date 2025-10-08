@@ -226,14 +226,6 @@ export default function CS2MapSelector() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="text-center mb-8 mt-8">
-          <div className="relative">
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 bg-clip-text text-transparent mb-2">
-              SispBalas
-            </h1>
-            <p className="text-xl md:text-2xl font-semibold text-cyan-400 tracking-wider">CHAVEAMENTO DE TORNEIO</p>
-          </div>
-        </div>
         
         <div className="text-center mb-8">
           <Link href="/">

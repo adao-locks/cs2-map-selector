@@ -6,15 +6,6 @@ import { Card, CardContent } from "../components/ui/card"
 export default function HomePage() {
   const menuItems = [
     {
-      title: "Vetador de Mapas",
-      description: "Sistema de veto e seleção de mapas para partidas",
-      icon: "🗺️",
-      href: "/map_picker",
-      gradient: "from-cyan-500 to-blue-600",
-      hoverGradient: "from-cyan-600 to-blue-700",
-      shadowColor: "cyan-500/25",
-    },
-    {
       title: "Seletor de Times",
       description: "Organize e selecione jogadores para os times",
       icon: "👥",
@@ -22,6 +13,15 @@ export default function HomePage() {
       gradient: "from-orange-500 to-red-600",
       hoverGradient: "from-orange-600 to-red-700",
       shadowColor: "orange-500/25",
+    },
+    {
+      title: "Vetador de Mapas",
+      description: "Sistema de veto e seleção de mapas para partidas",
+      icon: "🗺️",
+      href: "/map_picker",
+      gradient: "from-cyan-500 to-blue-600",
+      hoverGradient: "from-cyan-600 to-blue-700",
+      shadowColor: "cyan-500/25",
     },
     {
       title: "Chaveamento de Torneio",

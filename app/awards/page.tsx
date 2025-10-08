@@ -123,7 +123,7 @@ export default function CS2PlayerAwards() {
       `}</style>
 
       {/* Header */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-4">
         <h1 className="text-5xl font-bold text-white mb-4 bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
           🏆 CS2 Player Awards
         </h1>
