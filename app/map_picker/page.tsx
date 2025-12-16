@@ -191,6 +191,7 @@ export default function CS2MapSelector() {
 
                 <h3 className="font-bold text-lg mb-4 text-white text-center">{map.name}</h3>
 
+                {!(map.isBanned || map.isSelected) && (
                 <div className="flex flex-col space-y-3">
                   <Button
                     onClick={() => handleAction(map.name)}
@@ -205,6 +206,7 @@ export default function CS2MapSelector() {
                     {getNextAction() === "ban" ? "🚫 Vetar Mapa" : "✅ Selecionar Mapa"}
                   </Button>
                 </div>
+                )}
 
                 {map.isBanned && (
                   <Badge className="mt-3 w-full justify-center bg-gradient-to-r from-red-500 to-red-700 text-white border-0 shadow-lg">
