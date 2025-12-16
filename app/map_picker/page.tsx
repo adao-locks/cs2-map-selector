@@ -27,7 +27,7 @@ export default function CS2MapSelector() {
 
   const [maps, setMaps] = useState<MapType[]>([
     { name: "Ancient",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
-    { name: "Ancient Night",  isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Aztec",          isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
     { name: "Dust II",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
     { name: "Inferno",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
     { name: "Mirage",         isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
@@ -35,8 +35,8 @@ export default function CS2MapSelector() {
     { name: "Overpass",       isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
     { name: "Train",          isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
     { name: "Anubis",         isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
-    { name: "Italy",          isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
-    { name: "Office",         isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Cbble",          isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
+    { name: "Cache",          isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
     { name: "Vertigo",        isBanned: false, isSelected: false, isSideChosen: false, teamSide: "", side: "" },
   ])
 
@@ -68,7 +68,7 @@ export default function CS2MapSelector() {
     const totalBans = actionHistory.filter((a) => a.action === "vetou").length
     const totalSelects = actionHistory.filter((a) => a.action === "escolheu").length
 
-    if (totalBans < 4) return "ban"
+    if (totalBans < 6) return "ban"
     if (totalSelects < 2) return "select"
     return "ban"
   }
@@ -167,6 +167,7 @@ export default function CS2MapSelector() {
           </Badge>
         </div>
 
+        {/* CARD */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {maps.map((map) => (
             <Card
