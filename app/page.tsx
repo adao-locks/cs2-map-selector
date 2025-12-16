@@ -44,12 +44,8 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black-900 to-slate-900 p-4 md:p-6">
       {/* Background Effects */}
-      <div className="fixed inset-0 opacity-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(120,119,198,0.1)_60deg,transparent_120deg)]"></div>
-      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header */}
@@ -59,16 +55,13 @@ export default function HomePage() {
               SispBalas
             </h1>
             <p className="text-xl md:text-2xl font-semibold text-cyan-400 tracking-wider mb-2">
-              SISTEMA DE GERENCIAMENTO CS2
-            </p>
-            <p className="text-sm md:text-base text-gray-400 max-w-2xl mx-auto">
-              Plataforma completa para organização de partidas, times e torneios de Counter-Strike 2
+              Bora Cartear um CS?
             </p>
           </div>
         </div>
 
         {/* Menu Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-5xl mx-auto mt-16">
           {menuItems.map((item, index) => (
             <Link key={index} href={item.href}>
               <Card
@@ -106,15 +99,6 @@ export default function HomePage() {
               </Card>
             </Link>
           ))}
-        </div>
-
-        {/* Footer Info */}
-        <div className="mt-16 text-center">
-          <div className="inline-block p-6 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl">
-            <p className="text-gray-300 text-sm md:text-base">
-              💡 <span className="font-semibold text-cyan-400">Dica:</span> Selecione uma das opções acima para começar
-            </p>
-          </div>
         </div>
       </div>
     </div>

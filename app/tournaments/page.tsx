@@ -103,7 +103,7 @@ export default function CS2TournamentBracket() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black-900 to-slate-900 p-4 md:p-6">
       {/* Background Effects */}
       <div className="fixed inset-0 opacity-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.3),transparent_50%)]"></div>

@@ -107,7 +107,7 @@ export default function CS2PlayerAwards() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black-900 to-slate-900 p-8">
       <style jsx>{`
         .award-card {
           background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
