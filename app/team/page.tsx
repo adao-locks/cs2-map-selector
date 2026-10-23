@@ -1,62 +1,37 @@
 "use client"
 
 import { useState } from "react"
+import { Copy, Plus, Shuffle, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { PageShell } from "@/components/page-shell"
-import { TeamNameInputs } from "@/components/team-name-inputs"
+import { PageHeader, PageShell } from "@/components/page-shell"
+import { cn } from "@/lib/utils"
 
 type TeamKey = "team1" | "team2" | "bench"
 
 const TEAM_SIZE = 5
 const BENCH_SIZE = 50
-
-const THEMES = {
-  cyan: {
-    dot: "from-cyan-400 to-blue-500",
-    title: "text-cyan-400",
-    count: "bg-cyan-500/20 text-cyan-400 border-cyan-500/50",
-    input: "focus:border-cyan-400 focus:ring-cyan-400/20",
-    add: "from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 hover:shadow-cyan-500/25",
-    row: "bg-cyan-500/10 border-cyan-500/30 hover:bg-cyan-500/20",
-    index: "from-cyan-500 to-blue-600",
-  },
-  orange: {
-    dot: "from-orange-400 to-red-500",
-    title: "text-orange-400",
-    count: "bg-orange-500/20 text-orange-400 border-orange-500/50",
-    input: "focus:border-orange-400 focus:ring-orange-400/20",
-    add: "from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 hover:shadow-orange-500/25",
-    row: "bg-orange-500/10 border-orange-500/30 hover:bg-orange-500/20",
-    index: "from-orange-500 to-red-600",
-  },
-  green: {
-    dot: "from-green-400 to-green-500",
-    title: "text-green-400",
-    count: "bg-green-500/20 text-green-400 border-green-500/50",
-    input: "focus:border-green-400 focus:ring-green-400/20",
-    add: "from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 hover:shadow-green-500/25",
-    row: "bg-green-500/10 border-green-500/30 hover:bg-green-500/20",
-    index: "from-green-500 to-green-600",
-  },
-}
+const LIMITS: Record<TeamKey, number> = { team1: TEAM_SIZE, team2: TEAM_SIZE, bench: BENCH_SIZE }
 
 function TeamColumn({
   title,
+  dotClass,
   players,
   maxPlayers,
-  showMax,
-  theme,
+  isTeam,
+  onRename,
   onAdd,
   onRemove,
+  moveTargets,
 }: {
   title: string
+  dotClass: string
   players: string[]
   maxPlayers: number
-  showMax: boolean
-  theme: (typeof THEMES)[keyof typeof THEMES]
+  isTeam: boolean
+  onRename?: (name: string) => void
   onAdd: (player: string) => void
   onRemove: (index: number) => void
+  moveTargets?: { label: string; name: string; textClass: string; onMove: (index: number) => void }[]
 }) {
   const [newPlayer, setNewPlayer] = useState("")
   const isFull = players.length >= maxPlayers
@@ -69,14 +44,24 @@ function TeamColumn({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${theme.dot}`}></div>
-        <h3 className={`text-xl font-bold ${theme.title}`}>{title}</h3>
-        <Badge className={`border ${theme.count}`}>
+    <section className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-panel p-[18px]">
+      <div className="flex items-center gap-2.5">
+        <span className={cn("size-2.5 flex-none rounded-full", dotClass)} />
+        {onRename ? (
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => onRename(e.target.value)}
+            aria-label={`Nome do ${title}`}
+            className="-ml-2.5 h-10 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2.5 text-lg font-bold text-fg hover:border-line focus:border-team1"
+          />
+        ) : (
+          <h2 className="flex-1 text-lg font-bold">{title}</h2>
+        )}
+        <span className="font-mono text-[13px] text-fg-muted">
           {players.length}
-          {showMax && `/${maxPlayers}`}
-        </Badge>
+          {isTeam && `/${maxPlayers}`}
+        </span>
       </div>
 
       <div className="flex gap-2">
@@ -86,48 +71,56 @@ function TeamColumn({
           onChange={(e) => setNewPlayer(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addPlayer()}
           aria-label={`Nome do jogador para ${title}`}
-          className={`flex-1 p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 transition-all ${theme.input}`}
           placeholder="Nome do jogador"
           maxLength={20}
           disabled={isFull}
+          className="h-11 min-w-0 flex-1 rounded-[10px] border border-line bg-ink px-3 text-sm text-fg placeholder:text-fg-subtle focus:border-team1 disabled:opacity-50"
         />
         <Button
+          variant="secondary"
+          size="icon"
           onClick={addPlayer}
           disabled={!newPlayer.trim() || isFull}
           aria-label={`Adicionar jogador em ${title}`}
-          className={`bg-gradient-to-r text-white border-0 px-6 font-semibold shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${theme.add}`}
+          className="bg-panel-2"
         >
-          ➕
+          <Plus className="size-[18px]" />
         </Button>
       </div>
 
-      <div className="space-y-2">
-        {players.map((player, index) => (
-          <div
-            key={index}
-            className={`flex items-center justify-between p-3 backdrop-blur-md border rounded-lg group transition-all duration-300 ${theme.row}`}
-          >
-            <div className="flex items-center gap-3">
-              <Badge
-                className={`bg-gradient-to-r text-white border-0 w-8 h-8 flex items-center justify-center ${theme.index}`}
+      {players.length === 0 ? (
+        <p className="py-5 text-center text-sm text-fg-muted">Nenhum jogador ainda</p>
+      ) : (
+        <ol className="flex flex-col gap-1.5">
+          {players.map((player, index) => (
+            <li key={index} className="flex items-center gap-2.5 rounded-[10px] bg-panel-2 py-1 pr-1 pl-3">
+              <span className="w-4 font-mono text-xs text-fg-muted">{index + 1}</span>
+              <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{player}</span>
+              {moveTargets?.map((target) => (
+                <Button
+                  key={target.label}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => target.onMove(index)}
+                  aria-label={`Mover ${player} para ${target.name}`}
+                  className={cn("px-2 text-xs", target.textClass)}
+                >
+                  {target.label}
+                </Button>
+              ))}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => onRemove(index)}
+                aria-label={`Remover ${player}`}
               >
-                {index + 1}
-              </Badge>
-              <span className="text-white font-medium">{player}</span>
-            </div>
-            <Button
-              onClick={() => onRemove(index)}
-              size="sm"
-              aria-label={`Remover ${player}`}
-              className="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/50 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-300"
-            >
-              ✕
-            </Button>
-          </div>
-        ))}
-        {players.length === 0 && <div className="text-center py-8 text-gray-400 italic">Nenhum jogador adicionado</div>}
-      </div>
-    </div>
+                <X />
+              </Button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
   )
 }
 
@@ -137,12 +130,6 @@ export default function CS2TeamSelector() {
   const [players, setPlayers] = useState<Record<TeamKey, string[]>>({ team1: [], team2: [], bench: [] })
   const [copySuccess, setCopySuccess] = useState(false)
 
-  const columns = [
-    { key: "team1", title: team1, maxPlayers: TEAM_SIZE, showMax: true, theme: THEMES.cyan },
-    { key: "team2", title: team2, maxPlayers: TEAM_SIZE, showMax: true, theme: THEMES.orange },
-    { key: "bench", title: "Banco", maxPlayers: BENCH_SIZE, showMax: false, theme: THEMES.green },
-  ] as const
-
   const addPlayer = (team: TeamKey, player: string) => {
     setPlayers((prev) => ({ ...prev, [team]: [...prev[team], player] }))
   }
@@ -151,17 +138,39 @@ export default function CS2TeamSelector() {
     setPlayers((prev) => ({ ...prev, [team]: prev[team].filter((_, i) => i !== index) }))
   }
 
-  const hasPlayers = Object.values(players).some((list) => list.length > 0)
+  const moveFromBench = (index: number, to: "team1" | "team2") => {
+    setPlayers((prev) => {
+      if (prev[to].length >= LIMITS[to]) return prev
+      return {
+        ...prev,
+        [to]: [...prev[to], prev.bench[index]],
+        bench: prev.bench.filter((_, i) => i !== index),
+      }
+    })
+  }
+
+  // Embaralha todo mundo e divide em dois times iguais (até 5); quem sobra vai pro banco
+  const shuffleTeams = () => {
+    setPlayers((prev) => {
+      const all = [...prev.team1, ...prev.team2, ...prev.bench]
+      for (let i = all.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[all[i], all[j]] = [all[j], all[i]]
+      }
+      const perTeam = Math.min(TEAM_SIZE, Math.floor(all.length / 2))
+      return { team1: all.slice(0, perTeam), team2: all.slice(perTeam, perTeam * 2), bench: all.slice(perTeam * 2) }
+    })
+  }
+
+  const totalPlayers = players.team1.length + players.team2.length + players.bench.length
 
   const copyTeamsFormatted = async () => {
     const formatList = (list: string[]) => list.map((p, i) => `${i + 1}. ${p}`).join("\n")
     const sections = [`🎮 ${team1}\n${formatList(players.team1)}`, `🎮 ${team2}\n${formatList(players.team2)}`]
     if (players.bench.length > 0) sections.push(`🪑 Banco\n${formatList(players.bench)}`)
 
-    const formatted = `Times escolhidos\n${sections.join("\n\n")}`
-
     try {
-      await navigator.clipboard.writeText(formatted)
+      await navigator.clipboard.writeText(`Times escolhidos\n${sections.join("\n\n")}`)
       setCopySuccess(true)
       setTimeout(() => setCopySuccess(false), 2000)
     } catch (err) {
@@ -170,43 +179,58 @@ export default function CS2TeamSelector() {
   }
 
   return (
-    <PageShell className="mt-4">
-      <TeamNameInputs team1={team1} team2={team2} onTeam1Change={setTeam1} onTeam2Change={setTeam2} />
-
-      <div className="mt-12 mb-12 p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl">
-        <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-          <span className="text-2xl">👥</span>
-          <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-            Escolha dos Times
-          </span>
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {columns.map((column) => (
-            <TeamColumn
-              key={column.key}
-              title={column.title}
-              players={players[column.key]}
-              maxPlayers={column.maxPlayers}
-              showMax={column.showMax}
-              theme={column.theme}
-              onAdd={(player) => addPlayer(column.key, player)}
-              onRemove={(index) => removePlayer(column.key, index)}
-            />
-          ))}
-        </div>
-
-        {/* Copy Button */}
-        {hasPlayers && (
-          <div className="mt-8 flex justify-center">
-            <Button
-              onClick={copyTeamsFormatted}
-              className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
-            >
-              {copySuccess ? "✅ Copiado!" : "📋 Copiar Times Formatados"}
+    <PageShell>
+      <PageHeader
+        title="Seletor de times"
+        description="Até 5 por time. Quem sobrar fica no banco."
+        actions={
+          <>
+            <Button variant="secondary" onClick={shuffleTeams} disabled={totalPlayers < 2}>
+              <Shuffle />
+              Sortear times
             </Button>
-          </div>
-        )}
+            <Button onClick={copyTeamsFormatted} disabled={totalPlayers === 0}>
+              <Copy />
+              {copySuccess ? "Copiado" : "Copiar times"}
+            </Button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-4">
+        <TeamColumn
+          title={team1}
+          dotClass="bg-team1"
+          players={players.team1}
+          maxPlayers={TEAM_SIZE}
+          isTeam
+          onRename={setTeam1}
+          onAdd={(player) => addPlayer("team1", player)}
+          onRemove={(index) => removePlayer("team1", index)}
+        />
+        <TeamColumn
+          title={team2}
+          dotClass="bg-team2"
+          players={players.team2}
+          maxPlayers={TEAM_SIZE}
+          isTeam
+          onRename={setTeam2}
+          onAdd={(player) => addPlayer("team2", player)}
+          onRemove={(index) => removePlayer("team2", index)}
+        />
+        <TeamColumn
+          title="Banco"
+          dotClass="bg-fg-muted"
+          players={players.bench}
+          maxPlayers={BENCH_SIZE}
+          isTeam={false}
+          onAdd={(player) => addPlayer("bench", player)}
+          onRemove={(index) => removePlayer("bench", index)}
+          moveTargets={[
+            { label: "T1", name: team1, textClass: "text-team1", onMove: (index) => moveFromBench(index, "team1") },
+            { label: "T2", name: team2, textClass: "text-team2", onMove: (index) => moveFromBench(index, "team2") },
+          ]}
+        />
       </div>
     </PageShell>
   )

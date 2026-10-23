@@ -2,11 +2,11 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Copy, RotateCcw, Swords } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { PageShell } from "@/components/page-shell"
+import { PageHeader, PageShell } from "@/components/page-shell"
 import { TeamNameInputs } from "@/components/team-name-inputs"
+import { cn } from "@/lib/utils"
 
 type TeamId = 1 | 2
 // 3 = Sistema, que faz o último veto e escolhe o decider
@@ -40,6 +40,9 @@ const MAP_POOL = [
   "Vertigo",
 ]
 
+// Sequência dos times: 6 vetos, 2 picks e 2 vetos; o Sistema fecha com o decider
+const TOTAL_TEAM_ACTIONS = 10
+
 const initialMaps = (): MapState[] =>
   MAP_POOL.map((name): MapState => ({ name, status: "available", pickedBy: null, side: null }))
 
@@ -57,39 +60,36 @@ const getNextAction = (history: HistoryEntry[]): VetoAction => {
 }
 
 const describeAction = (entry: HistoryEntry) => {
-  if (entry.type === "side") return `escolheu lado ${entry.side}`
+  if (entry.type === "side") return `começa de ${entry.side} em`
   return entry.type === "ban" ? "vetou" : "escolheu"
 }
 
-const STATUS_CARD_CLASS: Record<MapState["status"], string> = {
-  available:
-    "bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-cyan-500/20 hover:border-cyan-400/50",
-  banned: "bg-red-500/20 backdrop-blur-md border border-red-500/50 shadow-lg shadow-red-500/25",
-  picked: "bg-green-500/20 backdrop-blur-md border border-green-500/50 shadow-lg shadow-green-500/25",
+// Quem não escolheu o mapa escolhe o lado. O decider não tem escolha: o lado sai no round faca.
+const getSideChooser = (map: MapState): TeamId | null =>
+  map.pickedBy === 1 || map.pickedBy === 2 ? otherTeam(map.pickedBy) : null
+
+const TEAM_TEXT_CLASS: Record<Actor, string> = {
+  1: "text-team1",
+  2: "text-team2",
+  3: "text-system",
 }
 
-const HISTORY_ROW_CLASS: Record<HistoryEntry["type"], string> = {
-  ban: "bg-red-500/20 backdrop-blur-md border-red-500/50",
-  pick: "bg-green-500/20 backdrop-blur-md border-green-500/50",
-  side: "bg-white/10 backdrop-blur-md border-white/20",
+const TEAM_DOT_CLASS: Record<Actor, string> = {
+  1: "bg-team1",
+  2: "bg-team2",
+  3: "bg-system",
 }
 
-const HISTORY_TEXT_CLASS: Record<HistoryEntry["type"], string> = {
-  ban: "text-red-400",
-  pick: "text-green-400",
-  side: "text-white",
+const PICK_BORDER_CLASS: Record<Actor, string> = {
+  1: "border-team1",
+  2: "border-team2",
+  3: "border-system",
 }
 
-const HISTORY_MAP_BADGE_CLASS: Record<HistoryEntry["type"], string> = {
-  ban: "bg-gradient-to-r from-red-500 to-red-700 text-white",
-  pick: "bg-gradient-to-r from-green-500 to-green-700 text-white",
-  side: "bg-white/20 text-white",
-}
-
-const ACTOR_BADGE_CLASS: Record<Actor, string> = {
-  1: "bg-gradient-to-r from-cyan-500 to-blue-600 text-white",
-  2: "bg-gradient-to-r from-orange-500 to-red-600 text-white",
-  3: "bg-gradient-to-r from-purple-500 to-pink-600 text-white",
+const HISTORY_TAG: Record<HistoryEntry["type"], { label: string; className: string }> = {
+  ban: { label: "VETO", className: "bg-ban-bg text-ban" },
+  pick: { label: "PICK", className: "bg-pick-bg text-fg" },
+  side: { label: "LADO", className: "bg-panel-2 text-fg-muted" },
 }
 
 export default function CS2MapSelector() {
@@ -102,12 +102,24 @@ export default function CS2MapSelector() {
 
   const nextAction = getNextAction(history)
   const vetoFinished = maps.every((map) => map.status !== "available")
+  const teamActions = history.filter((entry) => entry.team !== 3 && entry.type !== "side").length
 
   const teamName = (actor: Actor) => (actor === 1 ? team1 : actor === 2 ? team2 : "Sistema")
 
-  // Quem não escolheu o mapa escolhe o lado. O decider não tem escolha: o lado sai no round faca.
-  const getSideChooser = (map: MapState): TeamId | null =>
-    map.pickedBy === 1 || map.pickedBy === 2 ? otherTeam(map.pickedBy) : null
+  const steps = Array.from({ length: TOTAL_TEAM_ACTIONS + 1 }, (_, i) => {
+    const isDecider = i === TOTAL_TEAM_ACTIONS
+    return {
+      label: isDecider ? "Decider" : i >= 6 && i < 8 ? "Pick" : "Veto",
+      actor: (isDecider ? 3 : i % 2 === 0 ? 1 : 2) as Actor,
+      state: i < teamActions || (isDecider && vetoFinished) ? "done" : i === teamActions && !vetoFinished ? "current" : "next",
+    }
+  })
+
+  const pickedMaps = maps.filter((map) => map.status === "picked")
+  const summary = [
+    ...pickedMaps.filter((map) => map.pickedBy !== 3).map((map) => map.name),
+    ...pickedMaps.filter((map) => map.pickedBy === 3).map((map) => `${map.name} (decider)`),
+  ].join(" · ")
 
   const handleAction = (mapName: string) => {
     let nextMaps = maps.map(
@@ -152,45 +164,10 @@ export default function CS2MapSelector() {
     setHistory([...history, { team: chooser, type: "side", map: mapName, side }])
   }
 
-  const renderSideChoice = (map: MapState) => {
-    const chooser = getSideChooser(map)
-
-    if (!chooser) {
-      return <p className="mt-2 text-center text-sm text-gray-300">🔪 Lado decidido no round faca</p>
-    }
-
-    if (map.side) {
-      return (
-        <p className="mt-2 text-center text-sm text-white">
-          {teamName(chooser)} começa de{" "}
-          <span className={map.side === "CT" ? "font-bold text-blue-400" : "font-bold text-orange-400"}>
-            {map.side}
-          </span>
-        </p>
-      )
-    }
-
-    return (
-      <>
-        <p className="mt-2 text-center text-xs text-gray-300">{teamName(chooser)} escolhe o lado</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-1 mt-1">
-          <Button
-            onClick={() => chooseSide(map.name, "CT")}
-            size="sm"
-            className="w-full font-semibold transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white shadow-lg hover:shadow-blue-500/25"
-          >
-            🛡️ CT
-          </Button>
-          <Button
-            onClick={() => chooseSide(map.name, "TR")}
-            size="sm"
-            className="w-full font-semibold transition-all duration-300 bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white shadow-lg hover:shadow-orange-500/25"
-          >
-            🎯 TR
-          </Button>
-        </div>
-      </>
-    )
+  const resetVeto = () => {
+    setMaps(initialMaps())
+    setHistory([])
+    setCurrentTeam(1)
   }
 
   const copyHist = async () => {
@@ -208,107 +185,190 @@ export default function CS2MapSelector() {
   }
 
   return (
-    <PageShell className="mt-4">
+    <PageShell>
+      <PageHeader
+        title="Vetador de mapas"
+        description="6 vetos, 2 picks, mais 2 vetos. O mapa que sobra vira o decider."
+        actions={
+          <>
+            <Button variant="secondary" onClick={copyHist} disabled={history.length === 0}>
+              <Copy />
+              {copySuccess ? "Copiado" : "Copiar histórico"}
+            </Button>
+            <Button variant="secondary" onClick={resetVeto} disabled={history.length === 0}>
+              <RotateCcw />
+              Reiniciar
+            </Button>
+          </>
+        }
+      />
+
       <TeamNameInputs team1={team1} team2={team2} onTeam1Change={setTeam1} onTeam2Change={setTeam2} />
 
-      <div className="text-center mb-8">
-        <Badge className="px-6 py-3 text-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
-          {vetoFinished ? "🏁 Veto concluído" : `🎯 Vez do: ${teamName(currentTeam)}`}
-        </Badge>
-      </div>
-
-      {/* CARD */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        {maps.map((map) => (
-          <Card
-            key={map.name}
-            className={`transition-all duration-300 transform hover:scale-105 ${STATUS_CARD_CLASS[map.status]}`}
-          >
-            <CardContent className="p-4">
-              <div className="h-32 mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-white/10">
-                <img
-                  src={getImagePath(map.name)}
-                  alt={`Counter-Strike 2 ${map.name} map`}
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                />
-              </div>
-
-              <h3 className="font-bold text-lg mb-4 text-white text-center">{map.name}</h3>
-
-              {map.status === "available" && (
-                <Button
-                  onClick={() => handleAction(map.name)}
-                  size="sm"
-                  className={`w-full font-semibold transition-all duration-300 text-white shadow-lg ${
-                    nextAction === "ban"
-                      ? "bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 hover:shadow-red-500/25"
-                      : "bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 hover:shadow-green-500/25"
-                  }`}
-                >
-                  {nextAction === "ban" ? "🚫 Vetar Mapa" : "✅ Selecionar Mapa"}
-                </Button>
-              )}
-
-              {map.status === "banned" && (
-                <Badge className="mt-3 w-full justify-center bg-gradient-to-r from-red-500 to-red-700 text-white border-0 shadow-lg">
-                  🚫 VETADO
-                </Badge>
-              )}
-
-              {map.status === "picked" && (
-                <>
-                  <Badge className="mt-3 w-full justify-center bg-gradient-to-r from-green-500 to-green-700 text-white border-0 shadow-lg">
-                    ✅ {map.pickedBy === 3 ? "DECIDER" : "SELECIONADO"}
-                  </Badge>
-
-                  {renderSideChoice(map)}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {history.length > 0 && (
-        <div className="mt-12 p-8 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl">
-          <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
-            <span className="text-2xl">📜</span>
-            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Histórico de Vetos
+      <section
+        aria-label="Andamento do veto"
+        className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-panel px-5 py-[18px]"
+      >
+        {vetoFinished ? (
+          <div className="flex flex-wrap items-baseline gap-2.5">
+            <span className="text-lg font-bold">Veto concluído</span>
+            <span className="text-[15px] text-fg-muted">{summary}</span>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className={cn("size-2.5 rounded-full", TEAM_DOT_CLASS[currentTeam])} />
+            <span className="text-lg font-bold">Vez de {teamName(currentTeam)}</span>
+            <span className="text-[15px] text-fg-muted">
+              {nextAction === "ban" ? "Escolha um mapa para vetar" : "Escolha um mapa para jogar"}
             </span>
-          </h2>
+          </div>
+        )}
+        <ol className="flex flex-wrap gap-1.5">
+          {steps.map((step, index) => (
+            <li
+              key={index}
+              aria-current={step.state === "current" ? "step" : undefined}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs",
+                step.state === "done" && "border-line bg-panel-2 text-fg-muted",
+                step.state === "current" && "border-fg font-semibold text-fg",
+                step.state === "next" && "border-line text-fg-subtle",
+              )}
+            >
+              <span className={cn("size-1.5 rounded-full", TEAM_DOT_CLASS[step.actor])} />
+              {step.label}
+            </li>
+          ))}
+        </ol>
+      </section>
 
-          <div className="space-y-4">
-            {history.map((entry, index) => (
-              <div
-                key={index}
-                className={`flex items-center justify-between p-6 rounded-xl shadow-lg border transition-all duration-300 hover:scale-[1.02] ${HISTORY_ROW_CLASS[entry.type]}`}
+      <div className="flex flex-wrap items-start gap-6">
+        <div className="grid min-w-0 flex-[999_1_600px] grid-cols-[repeat(auto-fill,minmax(176px,1fr))] gap-3.5">
+          {maps.map((map) => {
+            const sideChooser = getSideChooser(map)
+            return (
+              <article
+                key={map.name}
+                className={cn(
+                  "flex flex-col overflow-hidden rounded-[14px] border bg-panel",
+                  map.status === "picked" && map.pickedBy ? PICK_BORDER_CLASS[map.pickedBy] : "border-line",
+                )}
               >
-                <Badge className={`px-4 py-2 text-sm font-semibold border-0 shadow-lg ${ACTOR_BADGE_CLASS[entry.team]}`}>
-                  {teamName(entry.team)}
-                </Badge>
-
-                <div className="flex-1 text-center">
-                  <span className={`font-bold text-lg ${HISTORY_TEXT_CLASS[entry.type]}`}>{describeAction(entry)}</span>
+                <div className="relative h-[104px] bg-panel-2">
+                  <img
+                    src={getImagePath(map.name)}
+                    alt=""
+                    className={cn("size-full object-cover", map.status === "banned" && "brightness-40 grayscale")}
+                  />
+                  {map.status === "banned" && (
+                    <span className="absolute top-2.5 left-2.5 rounded-md bg-ink px-2 py-1 font-mono text-[11px] tracking-[0.06em] text-ban">
+                      VETADO
+                    </span>
+                  )}
+                  {map.status === "picked" && map.pickedBy && (
+                    <span
+                      className={cn(
+                        "absolute top-2.5 left-2.5 rounded-md bg-ink px-2 py-1 font-mono text-[11px] tracking-[0.06em]",
+                        TEAM_TEXT_CLASS[map.pickedBy],
+                      )}
+                    >
+                      {map.pickedBy === 3 ? "DECIDER" : "PICK"}
+                    </span>
+                  )}
                 </div>
 
-                <Badge className={`px-4 py-2 font-bold border-0 shadow-lg ${HISTORY_MAP_BADGE_CLASS[entry.type]}`}>
-                  {entry.map}
-                </Badge>
-              </div>
-            ))}
-          </div>
+                <div className="flex flex-col gap-2.5 px-3.5 pt-3 pb-3.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h3 className={cn("text-base font-semibold", map.status === "banned" && "text-fg-subtle")}>
+                      {map.name}
+                    </h3>
+                    <span className="text-xs text-fg-muted">
+                      {map.status === "banned" ? "Vetado" : map.pickedBy ? teamName(map.pickedBy) : ""}
+                    </span>
+                  </div>
 
-          <div className="mt-8 flex justify-center">
-            <Button
-              onClick={copyHist}
-              className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0 px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
-            >
-              {copySuccess ? "✅ Copiado!" : "📋 Copiar Histórico"}
-            </Button>
-          </div>
+                  {map.status === "available" && (
+                    <Button
+                      onClick={() => handleAction(map.name)}
+                      variant={nextAction === "ban" ? "secondary" : "default"}
+                      className={cn(nextAction === "ban" && "border-ban-line text-ban hover:bg-ban-bg")}
+                    >
+                      {nextAction === "ban" ? "Vetar" : "Escolher"}
+                    </Button>
+                  )}
+
+                  {map.status === "picked" && !sideChooser && (
+                    <span className="flex items-center gap-1.5 text-[13px] text-fg-muted">
+                      <Swords className="size-3.5" aria-hidden="true" />
+                      Lado no round faca
+                    </span>
+                  )}
+
+                  {map.status === "picked" && sideChooser && map.side && (
+                    <span className="text-[13px] text-fg-muted">
+                      {teamName(sideChooser)} começa de <strong className="text-fg">{map.side}</strong>
+                    </span>
+                  )}
+
+                  {map.status === "picked" && sideChooser && !map.side && (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs text-fg-muted">{teamName(sideChooser)} escolhe o lado</span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {(["CT", "TR"] as const).map((side) => (
+                          <Button
+                            key={side}
+                            variant="secondary"
+                            onClick={() => chooseSide(map.name, side)}
+                            className="bg-panel-2 hover:bg-line"
+                          >
+                            {side}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </article>
+            )
+          })}
         </div>
-      )}
+
+        <aside
+          aria-labelledby="historico"
+          className="flex min-w-0 flex-[1_1_300px] flex-col gap-3 rounded-[14px] border border-line bg-panel px-5 py-[18px]"
+        >
+          <h2 id="historico" className="text-[15px] font-semibold">
+            Histórico
+          </h2>
+          {history.length === 0 ? (
+            <p className="text-sm leading-normal text-fg-muted">Nenhuma ação ainda. Comece vetando um mapa.</p>
+          ) : (
+            <ol className="flex flex-col">
+              {history.map((entry, index) => (
+                <li
+                  key={index}
+                  className="grid grid-cols-[24px_1fr_auto] items-center gap-2.5 border-b border-line-soft py-2 text-sm last:border-b-0"
+                >
+                  <span className="font-mono text-xs text-fg-muted">{index + 1}</span>
+                  <span>
+                    <span className={cn("font-semibold", TEAM_TEXT_CLASS[entry.team])}>{teamName(entry.team)}</span>{" "}
+                    <span className="text-fg-muted">{describeAction(entry)}</span>{" "}
+                    <span className="font-semibold">{entry.map}</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 font-mono text-[10px] tracking-[0.06em]",
+                      HISTORY_TAG[entry.type].className,
+                    )}
+                  >
+                    {HISTORY_TAG[entry.type].label}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </aside>
+      </div>
     </PageShell>
   )
 }

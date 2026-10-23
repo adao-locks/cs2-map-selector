@@ -1,5 +1,3 @@
-export type AwardTheme = "yellow" | "green" | "blue" | "red" | "purple" | "gray"
-
 export type PlayerStats = {
   name: string
   image: string
@@ -7,12 +5,13 @@ export type PlayerStats = {
   kda: { kills: number; deaths: number; assists: number }
 }
 
+// Estatística que aparece em destaque no card do prêmio
+export type AwardStat = "rating" | "kast" | "damage" | "kills" | "deaths"
+
 export type Award = {
   id: string
   award: string
-  icon: string
-  badge: string
-  theme: AwardTheme
+  stat: AwardStat
   player: PlayerStats
 }
 
@@ -21,7 +20,7 @@ const avg = (...values: number[]) => values.reduce((sum, v) => sum + v, 0) / val
 
 export const AWARDS_DATE = "26/09/2025"
 
-const players = {
+export const players = {
   davi: {
     name: "Davizera",
     image: "/players/davi.png",
@@ -48,11 +47,12 @@ const players = {
   },
 } satisfies Record<string, PlayerStats>
 
+// O primeiro prêmio é o MVP, que ganha o destaque da página
 export const awards: Award[] = [
-  { id: "mvp", award: "MVP", icon: "👑", badge: "1", theme: "yellow", player: players.davi },
-  { id: "useful", award: "Mais Útil", icon: "🛡️", badge: "⭐", theme: "green", player: players.ghs },
-  { id: "trade", award: "Trade Killer", icon: "⚡", badge: "9", theme: "blue", player: players.silva },
-  { id: "damage", award: "Mais Dano", icon: "💥", badge: "🔥", theme: "red", player: players.davi },
-  { id: "deaths", award: "Mais Morreu", icon: "💀", badge: "37", theme: "purple", player: players.davi },
-  { id: "sixth", award: "6º Player", icon: "🎯", badge: "🎯", theme: "gray", player: players.kad },
+  { id: "mvp", award: "MVP", stat: "rating", player: players.davi },
+  { id: "useful", award: "Mais útil", stat: "kast", player: players.ghs },
+  { id: "damage", award: "Mais dano", stat: "damage", player: players.davi },
+  { id: "trade", award: "Trade killer", stat: "kills", player: players.silva },
+  { id: "deaths", award: "Mais morreu", stat: "deaths", player: players.davi },
+  { id: "sixth", award: "6º player", stat: "rating", player: players.kad },
 ]
