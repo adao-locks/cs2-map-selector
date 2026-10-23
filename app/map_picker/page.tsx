@@ -57,9 +57,8 @@ const getNextAction = (history: HistoryEntry[]): VetoAction => {
 }
 
 const describeAction = (entry: HistoryEntry) => {
-  if (entry.type === "ban") return "vetou"
-  if (entry.type === "pick") return "escolheu"
-  return `escolheu lado ${entry.side}`
+  if (entry.type === "side") return `escolheu lado ${entry.side}`
+  return entry.type === "ban" ? "vetou" : "escolheu"
 }
 
 const STATUS_CARD_CLASS: Record<MapState["status"], string> = {
