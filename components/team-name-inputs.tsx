@@ -13,30 +13,19 @@ export function TeamNameInputs({ team1, team2, onTeam1Change, onTeam2Change }: T
   const id = useId()
 
   const fields = [
-    {
-      label: "Time 1",
-      value: team1,
-      onChange: onTeam1Change,
-      labelClass: "text-cyan-400",
-      inputClass: "focus:border-cyan-400 focus:ring-cyan-400/20",
-    },
-    {
-      label: "Time 2",
-      value: team2,
-      onChange: onTeam2Change,
-      labelClass: "text-orange-400",
-      inputClass: "focus:border-orange-400 focus:ring-orange-400/20",
-    },
+    { label: "Time 1", value: team1, onChange: onTeam1Change, dotClass: "bg-team1" },
+    { label: "Time 2", value: team2, onChange: onTeam2Change, dotClass: "bg-team2" },
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {fields.map((field, index) => (
-        <div key={field.label} className="space-y-3">
+        <div key={field.label} className="flex flex-col gap-2">
           <label
             htmlFor={`${id}-${index}`}
-            className={`block text-sm font-medium uppercase tracking-wider ${field.labelClass}`}
+            className="flex items-center gap-2 text-[13px] font-semibold text-fg-muted"
           >
+            <span className={`size-2 rounded-full ${field.dotClass}`} />
             {field.label}
           </label>
           <input
@@ -44,8 +33,8 @@ export function TeamNameInputs({ team1, team2, onTeam1Change, onTeam2Change }: T
             type="text"
             value={field.value}
             onChange={(e) => field.onChange(e.target.value)}
-            className={`w-full p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white placeholder-gray-400 focus:ring-2 transition-all ${field.inputClass}`}
             placeholder={`Nome do ${field.label}`}
+            className="h-11 rounded-[10px] border border-line bg-panel px-3.5 text-[15px] text-fg placeholder:text-fg-subtle focus:border-team1"
           />
         </div>
       ))}

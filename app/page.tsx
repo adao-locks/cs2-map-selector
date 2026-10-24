@@ -1,92 +1,73 @@
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { PageShell } from "@/components/page-shell"
+import { ArrowRight, Map as MapIcon, Network, Users } from "lucide-react"
+import { PageShell, SectionLabel } from "@/components/page-shell"
+import { buttonVariants } from "@/components/ui/button"
 
-// Classes completas (sem template string) para o Tailwind conseguir detectá-las no build
-const menuItems = [
+const tools = [
   {
-    title: "Seletor de Times",
-    description: "Organize e selecione jogadores para os times",
-    icon: "👥",
+    title: "Seletor de times",
+    description: "Monte os dois times e o banco, e copie a escalação pro grupo.",
     href: "/team",
-    gradient: "from-orange-500 to-red-600",
-    buttonHover: "hover:from-orange-600 hover:to-red-700 hover:shadow-orange-500/25",
-    cardShadow: "hover:shadow-orange-500/25",
+    Icon: Users,
   },
   {
-    title: "Vetador de Mapas",
-    description: "Sistema de veto e seleção de mapas para partidas",
-    icon: "🗺️",
+    title: "Vetador de mapas",
+    description: "Vetos e picks alternados, decider automático e escolha de lado.",
     href: "/map_picker",
-    gradient: "from-cyan-500 to-blue-600",
-    buttonHover: "hover:from-cyan-600 hover:to-blue-700 hover:shadow-cyan-500/25",
-    cardShadow: "hover:shadow-cyan-500/25",
+    Icon: MapIcon,
   },
   {
-    title: "Chaveamento de Torneio",
-    description: "Crie e gerencie brackets de torneios",
-    icon: "🏆",
+    title: "Chaveamento",
+    description: "Chave de 4, 8 ou 16 times, do primeiro jogo até o campeão.",
     href: "/tournaments",
-    gradient: "from-purple-500 to-pink-600",
-    buttonHover: "hover:from-purple-600 hover:to-pink-700 hover:shadow-purple-500/25",
-    cardShadow: "hover:shadow-purple-500/25",
-  },
-  {
-    title: "Ranking da Semana",
-    description: "Veja os melhores jogadores e times da semana",
-    icon: "⭐",
-    href: "/awards",
-    gradient: "from-green-500 to-emerald-600",
-    buttonHover: "hover:from-green-600 hover:to-emerald-700 hover:shadow-green-500/25",
-    cardShadow: "hover:shadow-green-500/25",
+    Icon: Network,
   },
 ]
 
 export default function HomePage() {
   return (
-    <PageShell showBack={false}>
-      {/* Header */}
-      <div className="text-center mb-12 mt-8">
-        <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 bg-clip-text text-transparent mb-4">
-          SispBalas
-        </h1>
-        <p className="text-xl md:text-2xl font-semibold text-cyan-400 tracking-wider mb-2">Bora Cartear um CS?</p>
-      </div>
-
-      {/* Menu Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-5xl mx-auto mt-16">
-        {menuItems.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <Card
-              className={`group transition-all duration-300 transform hover:scale-105 bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl hover:border-white/40 cursor-pointer h-full ${item.cardShadow}`}
-            >
-              <CardContent className="p-8">
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="text-6xl mb-2 transform transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                    {item.icon}
-                  </div>
-
-                  <h2
-                    className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${item.gradient} bg-clip-text text-transparent`}
-                  >
-                    {item.title}
-                  </h2>
-
-                  <p className="text-gray-300 text-sm md:text-base leading-relaxed">{item.description}</p>
-
-                  <div className="pt-4 w-full">
-                    <div
-                      className={`w-full py-3 px-6 rounded-lg bg-gradient-to-r ${item.gradient} ${item.buttonHover} text-white font-semibold shadow-lg transition-all duration-300 text-center`}
-                    >
-                      Acessar →
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+    <PageShell className="gap-16 pt-[72px] pb-24">
+      <section className="flex max-w-[720px] flex-col gap-5">
+        <span className="font-mono text-[13px] tracking-[0.08em] text-fg-muted uppercase">CS2 entre amigos</span>
+        <h1 className="text-5xl leading-[1.05] font-bold tracking-[-0.03em] md:text-[64px]">Bora cartear um CS?</h1>
+        <p className="text-lg leading-relaxed text-fg-muted">
+          Monte os times, vete os mapas e organize o chaveamento. Tudo num lugar só.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-3">
+          <Link href="/team" className={buttonVariants({ className: "px-5 text-[15px]" })}>
+            Montar os times
+            <ArrowRight />
           </Link>
-        ))}
-      </div>
+          <Link href="/map_picker" className={buttonVariants({ variant: "secondary", className: "px-5 text-[15px]" })}>
+            Ir para o veto
+          </Link>
+        </div>
+      </section>
+
+      <section aria-labelledby="ferramentas" className="flex flex-col gap-5">
+        <SectionLabel id="ferramentas">Ferramentas</SectionLabel>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+          {tools.map(({ title, description, href, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="group flex min-h-[200px] flex-col gap-4 rounded-[14px] border border-line bg-panel p-6 transition-colors hover:border-line-strong hover:bg-[#161a20]"
+            >
+              <span className="flex size-11 items-center justify-center rounded-[10px] bg-panel-2">
+                <Icon className="size-[22px]" strokeWidth={1.8} aria-hidden="true" />
+              </span>
+              <span className="flex flex-col gap-1.5">
+                <span className="text-lg font-semibold">{title}</span>
+                <span className="text-sm leading-normal text-fg-muted">{description}</span>
+              </span>
+              <span className="mt-auto flex items-center gap-1.5 text-sm font-medium">
+                Abrir
+                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
     </PageShell>
   )
 }

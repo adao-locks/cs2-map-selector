@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Trophy, Plus, X, Edit2 } from "lucide-react"
+import { Check, Pencil, RotateCcw, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { PageShell } from "@/components/page-shell"
+import { PageHeader, PageShell } from "@/components/page-shell"
+import { cn } from "@/lib/utils"
 
 type Slot = "team1" | "team2"
 
@@ -24,6 +24,8 @@ interface ResolvedMatch extends Match {
   team2: string | null
 }
 
+const BRACKET_SIZES = [4, 8, 16]
+
 const getRoundName = (teamsInRound: number) => {
   if (teamsInRound === 2) return "Final"
   if (teamsInRound === 4) return "Semifinal"
@@ -31,6 +33,26 @@ const getRoundName = (teamsInRound: number) => {
   if (teamsInRound === 16) return "Oitavas de Final"
   return `Rodada de ${teamsInRound}`
 }
+
+const buildRounds = (numTeams: number) => {
+  const rounds: BracketRound[] = []
+  let roundNum = 1
+
+  for (let teamsInRound = numTeams; teamsInRound > 1; teamsInRound /= 2) {
+    rounds.push({
+      name: getRoundName(teamsInRound),
+      matches: Array.from({ length: teamsInRound / 2 }, (_, i) => ({
+        id: `round${roundNum}-match${i}`,
+        winner: null,
+      })),
+    })
+    roundNum++
+  }
+
+  return rounds
+}
+
+const buildTeamNames = (numTeams: number) => Array.from({ length: numTeams }, (_, i) => `Time ${i + 1}`)
 
 const getMatchWinner = (match: ResolvedMatch) => (match.winner ? match[match.winner] : null)
 
@@ -57,6 +79,7 @@ const resolveBracket = (teamNames: string[], rounds: BracketRound[]) => {
 function TeamRow({
   name,
   status,
+  selectable,
   editable,
   editing,
   onSelect,
@@ -65,6 +88,7 @@ function TeamRow({
 }: {
   name: string | null
   status: "winner" | "loser" | "pending"
+  selectable: boolean
   editable: boolean
   editing: boolean
   onSelect: () => void
@@ -73,8 +97,8 @@ function TeamRow({
 }) {
   if (editing) {
     return (
-      <div className="p-4">
-        <Input
+      <div className="p-1.5">
+        <input
           defaultValue={name ?? ""}
           onBlur={(e) => onRename(e.target.value)}
           onKeyDown={(e) => {
@@ -82,39 +106,36 @@ function TeamRow({
           }}
           autoFocus
           aria-label="Nome do time"
-          className="bg-white/10 border-white/20 text-white"
+          className="h-9 w-full rounded-lg border border-team1 bg-ink px-2.5 text-[15px] text-fg"
         />
       </div>
     )
   }
 
   return (
-    <div
-      className={`flex items-center justify-between transition-all ${
-        status === "winner"
-          ? "bg-green-600/30 border-l-4 border-l-green-500"
-          : status === "loser"
-            ? "bg-red-600/20"
-            : "hover:bg-white/5"
-      }`}
-    >
+    <div className={cn("flex items-center", status === "winner" && "bg-panel-2")}>
       <button
         type="button"
         onClick={onSelect}
-        disabled={!name}
-        className="flex-1 p-4 text-left text-white font-medium cursor-pointer disabled:cursor-default disabled:text-white/40"
+        disabled={!selectable}
+        className={cn(
+          "flex min-h-12 flex-1 items-center justify-between gap-2 px-3.5 text-left text-[15px] transition-colors enabled:cursor-pointer enabled:hover:bg-panel-2",
+          status === "winner" ? "font-bold text-fg" : "font-medium",
+          (!name || status === "loser") && "text-fg-subtle",
+        )}
       >
-        {name ?? "A definir"}
+        <span className="truncate">{name ?? "A definir"}</span>
+        {status === "winner" && <Check className="size-4 flex-none" strokeWidth={2.2} aria-label="Vencedor" />}
       </button>
       {editable && (
         <Button
-          size="sm"
           variant="ghost"
+          size="icon-sm"
           onClick={onStartEdit}
           aria-label={`Editar nome de ${name}`}
-          className="mr-3 h-6 w-6 p-0 text-white/60 hover:text-white"
+          className="mr-1.5"
         >
-          <Edit2 className="w-3 h-3" />
+          <Pencil className="size-3.5" />
         </Button>
       )}
     </div>
@@ -122,34 +143,22 @@ function TeamRow({
 }
 
 export default function CS2TournamentBracket() {
-  const [numTeams, setNumTeams] = useState<number>(8)
-  const [bracketStarted, setBracketStarted] = useState(false)
+  const [numTeams, setNumTeams] = useState(8)
   const [editingSlot, setEditingSlot] = useState<string | null>(null)
-  const [teamNames, setTeamNames] = useState<string[]>([])
-  const [rounds, setRounds] = useState<BracketRound[]>([])
+  const [teamNames, setTeamNames] = useState<string[]>(() => buildTeamNames(8))
+  const [rounds, setRounds] = useState<BracketRound[]>(() => buildRounds(8))
 
   const bracket = resolveBracket(teamNames, rounds)
   const finalMatch = bracket.at(-1)?.[0]
   const champion = finalMatch ? getMatchWinner(finalMatch) : null
+  const hasResults = rounds.some((round) => round.matches.some((match) => match.winner))
 
-  const initializeBracket = () => {
-    const initialRounds: BracketRound[] = []
-    let roundNum = 1
-
-    for (let teamsInRound = numTeams; teamsInRound > 1; teamsInRound /= 2) {
-      initialRounds.push({
-        name: getRoundName(teamsInRound),
-        matches: Array.from({ length: teamsInRound / 2 }, (_, i) => ({
-          id: `round${roundNum}-match${i}`,
-          winner: null,
-        })),
-      })
-      roundNum++
-    }
-
-    setTeamNames(Array.from({ length: numTeams }, (_, i) => `Time ${i + 1}`))
-    setRounds(initialRounds)
-    setBracketStarted(true)
+  const changeSize = (size: number) => {
+    if (size === numTeams) return
+    setNumTeams(size)
+    setTeamNames(buildTeamNames(size))
+    setRounds(buildRounds(size))
+    setEditingSlot(null)
   }
 
   const updateMatchWinner = (roundIndex: number, matchIndex: number, winner: Slot) => {
@@ -179,126 +188,95 @@ export default function CS2TournamentBracket() {
     setEditingSlot(null)
   }
 
-  const resetBracket = () => {
-    setBracketStarted(false)
-    setRounds([])
-    setTeamNames([])
-  }
-
   return (
     <PageShell>
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-3 mb-4">
-          <Trophy className="w-10 h-10 text-yellow-400" />
-          <h1 className="text-4xl md:text-5xl font-bold text-white">Chaveamento de Torneio</h1>
-          <Trophy className="w-10 h-10 text-yellow-400" />
-        </div>
-        <p className="text-purple-200 text-lg">Configure e gerencie seu torneio de CS2</p>
-      </div>
-
-      {!bracketStarted ? (
-        // Setup Screen
-        <div className="max-w-md mx-auto">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">Configurar Torneio</h2>
-
-            <div className="space-y-6">
-              <div>
-                <label htmlFor="num-teams" className="block text-white mb-2 font-medium">
-                  Número de Times
-                </label>
-                <select
-                  id="num-teams"
-                  value={numTeams}
-                  onChange={(e) => setNumTeams(Number(e.target.value))}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+      <PageHeader
+        title="Chaveamento"
+        description="Clique no time que venceu. Trocar um resultado limpa as fases seguintes."
+        actions={
+          <>
+            <div role="group" aria-label="Número de times" className="flex gap-0.5 rounded-xl border border-line bg-panel p-1">
+              {BRACKET_SIZES.map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => changeSize(size)}
+                  aria-pressed={size === numTeams}
+                  className={cn(
+                    "h-9 cursor-pointer rounded-lg px-3.5 text-sm font-semibold transition-colors",
+                    size === numTeams ? "bg-line text-fg" : "text-fg-muted hover:text-fg",
+                  )}
                 >
-                  {[4, 8, 16].map((n) => (
-                    <option key={n} value={n} className="bg-slate-800">
-                      {n} Times
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <Button
-                onClick={initializeBracket}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-6 text-lg"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Iniciar Chaveamento
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        // Bracket Display
-        <div className="space-y-6">
-          <div className="flex justify-center gap-4 mb-8">
-            <Button onClick={resetBracket} variant="destructive" className="bg-red-600 hover:bg-red-700">
-              <X className="w-4 h-4 mr-2" />
-              Resetar Chaveamento
-            </Button>
-          </div>
-
-          <div className="overflow-x-auto pb-8">
-            <div className="flex gap-8 min-w-max justify-center">
-              {bracket.map((matches, roundIndex) => (
-                <div key={rounds[roundIndex].name} className="flex flex-col gap-4" style={{ minWidth: "280px" }}>
-                  <h3 className="text-xl font-bold text-center text-white mb-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg py-3">
-                    {rounds[roundIndex].name}
-                  </h3>
-
-                  <div
-                    className="flex flex-col gap-6"
-                    style={{
-                      marginTop: roundIndex > 0 ? `${Math.pow(2, roundIndex) * 40}px` : "0",
-                    }}
-                  >
-                    {matches.map((match, matchIndex) => (
-                      <div
-                        key={match.id}
-                        className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg overflow-hidden divide-y divide-white/10"
-                        style={{
-                          marginBottom: roundIndex > 0 ? `${Math.pow(2, roundIndex) * 40}px` : "0",
-                        }}
-                      >
-                        {(["team1", "team2"] as const).map((slot, slotIndex) => {
-                          const slotKey = `${match.id}-${slot}`
-                          const teamIndex = matchIndex * 2 + slotIndex
-                          return (
-                            <TeamRow
-                              key={slot}
-                              name={match[slot]}
-                              status={!match.winner ? "pending" : match.winner === slot ? "winner" : "loser"}
-                              editable={roundIndex === 0}
-                              editing={editingSlot === slotKey}
-                              onSelect={() => updateMatchWinner(roundIndex, matchIndex, slot)}
-                              onStartEdit={() => setEditingSlot(slotKey)}
-                              onRename={(name) => updateTeamName(teamIndex, name)}
-                            />
-                          )
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  {size} times
+                </button>
               ))}
             </div>
-          </div>
+            <Button variant="secondary" onClick={() => setRounds(buildRounds(numTeams))} disabled={!hasResults}>
+              <RotateCcw />
+              Limpar resultados
+            </Button>
+          </>
+        }
+      />
 
-          {/* Winner Display */}
-          {champion && (
-            <div className="text-center mt-12">
-              <div className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl p-8 border-4 border-yellow-300 shadow-2xl">
-                <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-900" />
-                <h2 className="text-3xl font-bold text-yellow-900 mb-2">🏆 CAMPEÃO 🏆</h2>
-                <p className="text-2xl font-bold text-yellow-950">{champion}</p>
+      <div className="overflow-x-auto pb-2">
+        <div className="flex min-w-max items-stretch gap-5">
+          {bracket.map((matches, roundIndex) => (
+            <section key={rounds[roundIndex].name} className="flex w-60 flex-col gap-3.5">
+              <h2 className="text-[13px] font-semibold tracking-[0.06em] text-fg-muted uppercase">
+                {rounds[roundIndex].name}
+              </h2>
+              <div className="flex flex-1 flex-col justify-around gap-4">
+                {matches.map((match, matchIndex) => (
+                  <div
+                    key={match.id}
+                    className="flex flex-col divide-y divide-line overflow-hidden rounded-xl border border-line bg-panel"
+                  >
+                    {(["team1", "team2"] as const).map((slot, slotIndex) => {
+                      const slotKey = `${match.id}-${slot}`
+                      const teamIndex = matchIndex * 2 + slotIndex
+                      return (
+                        <TeamRow
+                          key={slot}
+                          name={match[slot]}
+                          status={!match.winner ? "pending" : match.winner === slot ? "winner" : "loser"}
+                          selectable={Boolean(match.team1 && match.team2)}
+                          editable={roundIndex === 0}
+                          editing={editingSlot === slotKey}
+                          onSelect={() => updateMatchWinner(roundIndex, matchIndex, slot)}
+                          onStartEdit={() => setEditingSlot(slotKey)}
+                          onRename={(name) => updateTeamName(teamIndex, name)}
+                        />
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          <section className="flex w-[220px] flex-col gap-3.5">
+            <h2 className="text-[13px] font-semibold tracking-[0.06em] text-fg-muted uppercase">Campeão</h2>
+            <div className="flex flex-1 flex-col justify-center">
+              <div
+                className={cn(
+                  "flex flex-col items-center gap-2.5 rounded-[14px] border bg-panel px-4 py-6 text-center",
+                  champion ? "border-team2" : "border-line",
+                )}
+              >
+                <Trophy
+                  className={cn("size-8", champion ? "text-team2" : "text-line-strong")}
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+                <span className={cn("text-xl font-bold", champion ? "text-fg" : "text-fg-subtle")}>
+                  {champion ?? "A definir"}
+                </span>
               </div>
             </div>
-          )}
+          </section>
         </div>
-      )}
+      </div>
     </PageShell>
   )
 }
