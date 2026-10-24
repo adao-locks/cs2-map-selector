@@ -1,10 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link"
-import { ArrowRight, Map as MapIcon, Network, Trophy, Users } from "lucide-react"
+import { ArrowRight, Map as MapIcon, Network, Users } from "lucide-react"
 import { PageShell, SectionLabel } from "@/components/page-shell"
 import { buttonVariants } from "@/components/ui/button"
-import { AWARDS_DATE, awards } from "@/data/awards"
-import { formatNumber } from "@/lib/utils"
 
 const tools = [
   {
@@ -25,24 +22,16 @@ const tools = [
     href: "/tournaments",
     Icon: Network,
   },
-  {
-    title: "Ranking da semana",
-    description: "MVP, mais dano, mais útil e os outros prêmios da rodada.",
-    href: "/awards",
-    Icon: Trophy,
-  },
 ]
 
 export default function HomePage() {
-  const mvp = awards[0].player
-
   return (
     <PageShell className="gap-16 pt-[72px] pb-24">
       <section className="flex max-w-[720px] flex-col gap-5">
         <span className="font-mono text-[13px] tracking-[0.08em] text-fg-muted uppercase">CS2 entre amigos</span>
         <h1 className="text-5xl leading-[1.05] font-bold tracking-[-0.03em] md:text-[64px]">Bora cartear um CS?</h1>
         <p className="text-lg leading-relaxed text-fg-muted">
-          Monte os times, vete os mapas, organize o chaveamento e veja quem carregou a semana. Tudo num lugar só.
+          Monte os times, vete os mapas e organize o chaveamento. Tudo num lugar só.
         </p>
         <div className="mt-2 flex flex-wrap gap-3">
           <Link href="/team" className={buttonVariants({ className: "px-5 text-[15px]" })}>
@@ -78,34 +67,6 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
-      </section>
-
-      <section
-        aria-labelledby="destaque"
-        className="flex flex-wrap items-center gap-6 rounded-[14px] border border-line bg-panel p-6"
-      >
-        <img src={mvp.image} alt={mvp.name} className="size-[72px] rounded-full border-2 border-line-strong object-cover" />
-        <div className="flex flex-[1_1_200px] flex-col gap-1">
-          <span className="font-mono text-xs tracking-[0.08em] text-fg-muted uppercase">MVP da semana · {AWARDS_DATE}</span>
-          <h2 id="destaque" className="text-2xl font-bold tracking-tight">
-            {mvp.name}
-          </h2>
-        </div>
-        <dl className="flex flex-wrap gap-8">
-          {[
-            { label: "Rating", value: formatNumber(mvp.stats.rating, 2) },
-            { label: "ADR", value: formatNumber(mvp.stats.adr, 1) },
-            { label: "K / D / A", value: `${mvp.kda.kills} / ${mvp.kda.deaths} / ${mvp.kda.assists}` },
-          ].map((stat) => (
-            <div key={stat.label} className="flex flex-col gap-0.5">
-              <dt className="text-xs text-fg-muted">{stat.label}</dt>
-              <dd className="font-mono text-xl">{stat.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <Link href="/awards" className={buttonVariants({ variant: "secondary" })}>
-          Ver ranking
-        </Link>
       </section>
     </PageShell>
   )

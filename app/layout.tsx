@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "SispBalas",
-  description: "Ferramentas para partidas de CS2: seleção de times, veto de mapas, chaveamento e ranking.",
+  description: "Ferramentas para partidas de CS2: seleção de times, veto de mapas e chaveamento.",
 };
 
 export default function RootLayout({

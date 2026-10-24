@@ -9,7 +9,6 @@ const NAV_LINKS = [
   { href: "/team", label: "Times" },
   { href: "/map_picker", label: "Vetos" },
   { href: "/tournaments", label: "Chaveamento" },
-  { href: "/awards", label: "Ranking" },
 ]
 
 export function SiteHeader() {
