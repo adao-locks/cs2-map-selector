@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Copy, Plus, Shuffle, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Copy, Map as MapIcon, Plus, Shuffle, X } from "lucide-react"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { PageHeader, PageShell } from "@/components/page-shell"
 import { cn } from "@/lib/utils"
 
@@ -193,6 +194,13 @@ export default function CS2TeamSelector() {
               <Copy />
               {copySuccess ? "Copiado" : "Copiar times"}
             </Button>
+            <Link
+              href={{ pathname: "/map_picker", query: { time1: team1, time2: team2 } }}
+              className={buttonVariants({ variant: "secondary" })}
+            >
+              <MapIcon />
+              Levar para o veto
+            </Link>
           </>
         }
       />

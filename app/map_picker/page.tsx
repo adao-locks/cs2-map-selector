@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Copy, ListChecks, RotateCcw, Swords } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PageHeader, PageShell } from "@/components/page-shell"
@@ -101,6 +101,16 @@ export default function CS2MapSelector() {
   const [maps, setMaps] = useState<MapState[]>(initialMaps)
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [copied, setCopied] = useState<CopyTarget | null>(null)
+
+  // Nomes vindos do seletor de times (?time1=...&time2=...); limpa a URL depois de ler
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const name1 = params.get("time1")?.trim()
+    const name2 = params.get("time2")?.trim()
+    if (name1) setTeam1(name1)
+    if (name2) setTeam2(name2)
+    if (params.has("time1") || params.has("time2")) window.history.replaceState(null, "", window.location.pathname)
+  }, [])
 
   const nextAction = getNextAction(history)
   const vetoFinished = maps.every((map) => map.status !== "available")
