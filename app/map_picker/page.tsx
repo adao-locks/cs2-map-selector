@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { Copy, RotateCcw, Swords } from "lucide-react"
+import { Copy, ListChecks, RotateCcw, Swords } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PageHeader, PageShell } from "@/components/page-shell"
 import { TeamNameInputs } from "@/components/team-name-inputs"
@@ -24,6 +24,8 @@ type MapState = {
 type HistoryEntry =
   | { team: Actor; type: VetoAction; map: string }
   | { team: TeamId; type: "side"; map: string; side: Side }
+
+type CopyTarget = "history" | "picks"
 
 const MAP_POOL = [
   "Ancient",
@@ -98,7 +100,7 @@ export default function CS2MapSelector() {
   const [currentTeam, setCurrentTeam] = useState<TeamId>(1)
   const [maps, setMaps] = useState<MapState[]>(initialMaps)
   const [history, setHistory] = useState<HistoryEntry[]>([])
-  const [copySuccess, setCopySuccess] = useState(false)
+  const [copied, setCopied] = useState<CopyTarget | null>(null)
 
   const nextAction = getNextAction(history)
   const vetoFinished = maps.every((map) => map.status !== "available")
@@ -170,18 +172,41 @@ export default function CS2MapSelector() {
     setCurrentTeam(1)
   }
 
-  const copyHist = async () => {
-    const formatted = `Histórico de Vetos:\n${history
-      .map((entry, index) => `${index + 1}. ${teamName(entry.team)} ${describeAction(entry)} ${entry.map}`)
-      .join("\n")}`
-
+  const copyText = async (text: string, target: CopyTarget) => {
     try {
-      await navigator.clipboard.writeText(formatted)
-      setCopySuccess(true)
-      setTimeout(() => setCopySuccess(false), 2000)
+      await navigator.clipboard.writeText(text)
+      setCopied(target)
+      setTimeout(() => setCopied(null), 2000)
     } catch (err) {
       console.error("Failed to copy:", err)
     }
+  }
+
+  const copyHist = () =>
+    copyText(
+      `Histórico de Vetos:\n${history
+        .map((entry, index) => `${index + 1}. ${teamName(entry.team)} ${describeAction(entry)} ${entry.map}`)
+        .join("\n")}`,
+      "history",
+    )
+
+  // Só os mapas escolhidos, na ordem do pick, com quem escolheu e o lado de cada time
+  const copyPicks = () => {
+    const picks = history.flatMap((entry) => {
+      if (entry.type !== "pick") return []
+      const map = maps.find((m) => m.name === entry.map)
+      if (!map) return []
+
+      if (entry.team === 3) return [`${map.name} (decider) - lado no round faca`]
+
+      const chooser = otherTeam(entry.team)
+      const sides = map.side
+        ? `${teamName(chooser)} ${map.side} x ${teamName(entry.team)} ${map.side === "CT" ? "TR" : "CT"}`
+        : `${teamName(chooser)} escolhe o lado`
+      return [`${map.name} (pick de ${teamName(entry.team)}) - ${sides}`]
+    })
+
+    copyText(`Picks:\n${picks.map((line, index) => `${index + 1}. ${line}`).join("\n")}`, "picks")
   }
 
   return (
@@ -193,7 +218,11 @@ export default function CS2MapSelector() {
           <>
             <Button variant="secondary" onClick={copyHist} disabled={history.length === 0}>
               <Copy />
-              {copySuccess ? "Copiado" : "Copiar histórico"}
+              {copied === "history" ? "Copiado" : "Copiar histórico"}
+            </Button>
+            <Button variant="secondary" onClick={copyPicks} disabled={pickedMaps.length === 0}>
+              <ListChecks />
+              {copied === "picks" ? "Copiado" : "Copiar Pickin"}
             </Button>
             <Button variant="secondary" onClick={resetVeto} disabled={history.length === 0}>
               <RotateCcw />
